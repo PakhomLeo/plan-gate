@@ -12,7 +12,9 @@ In scope:
 - `dsh/plugin/quick-dev-plan-arm.mjs` and `dsh/preset/quick-dev.patch.yml`: anything that widens what the agent may do beyond DSH's standard mode, or approves a plan without the user.
 - `SKILL.md` and `references/`: instructions that make an agent skip user confirmation.
 
-Out of scope: DSH, Qoder or other agent clients themselves (report those upstream), and the documented risk of the one-line `curl | bash` / `irm | iex` install, which runs unverified code by design. Use a checkout or pin `CPF_REF` instead.
+- `scripts/make-release.sh` and `.github/workflows/release.yml`: a release whose `SHA256SUMS` does not match its assets.
+
+Out of scope: DSH, Qoder or other agent clients themselves (report those upstream), and piping `install.sh` or `install.ps1` from the network straight into a shell, which skips verification and is not a documented install method. Clone the repository, or download a release archive and check it against the release's `SHA256SUMS` first (see the README).
 
 ## Supported versions
 

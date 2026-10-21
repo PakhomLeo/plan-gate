@@ -17,7 +17,7 @@ Thanks for helping. This project is small on purpose: one skill, four templates,
 | Installer | `install.sh` **and** `install.ps1` | `tests/install-test.sh`, both READMEs |
 | Files the installer ships | `SKILL_FILES` in both installers | The manifest logic handles removal of dropped files |
 | Diagrams | `scripts/make_diagrams.py`, then `python3 scripts/make_diagrams.py docs/assets` | Keep the shared style block |
-| Release | `VERSION`, `CHANGELOG.md` | Tag `vX.Y.Z` |
+| Release | `VERSION`, `CHANGELOG.md` (replace `Unreleased` with the date) | Push tag `vX.Y.Z`; the release workflow builds the assets and `SHA256SUMS` with `scripts/make-release.sh`. Never edit `SHA256SUMS` by hand |
 
 Do not hand-edit a rendered DSH copy: the installer derives the project-root layout from the source by replacing `docs/MAP.md`, `docs/HARNESS.md` and `docs/TASK.md` with bare names.
 
@@ -37,9 +37,10 @@ These are the project's promises to users. A pull request that breaks one will n
 Run these before opening a pull request:
 
 ```bash
-shellcheck install.sh tests/*.sh
+shellcheck install.sh scripts/*.sh tests/*.sh
 bash tests/install-test.sh
 bash tests/parity-test.sh        # PowerShell 7: https://aka.ms/powershell
+bash tests/release-test.sh
 ```
 
 Optional: `Invoke-ScriptAnalyzer -Path install.ps1` (PSScriptAnalyzer). `PSAvoidUsingWriteHost` is expected for a console installer.

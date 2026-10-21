@@ -2,23 +2,27 @@
 
 All notable changes are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
-## 1.0.0 – unreleased
+## [1.0.0] - Unreleased
 
-First release of the merged project.
+First release of the merged project. Tag: `v1.0.0`. The date is filled in when the release is published.
 
 ### Added
 
 - One installer pair (`install.sh`, `install.ps1`) for two components: `skill` (any `SKILL.md` client, default Qoder) and `dsh` (DSH quick dev mode). Options: `--components`, `--skills-dir`, `--dsh-home`, `--uninstall`, `--migrate-legacy`, `--dry-run`.
 - `.cpf-manifest` in each installed skill folder, so updates and uninstall touch only files the installer wrote.
 - Upgrade path from the former installers: earlier installs are detected and left alone, or moved to `~/.code-project-flow-backups/<time>/` with `--migrate-legacy`. Nothing is deleted.
-- `CPF_REF` / `CPF_REPO_URL` to pin the ref used by the one-line install.
-- Tests: `tests/install-test.sh` (end-to-end, temp `HOME`) and `tests/parity-test.sh` (`install.sh` vs `install.ps1`, byte-identical results).
+- Release assets with checksums: `scripts/make-release.sh` builds `code-project-flow-vX.Y.Z.tar.gz`/`.zip`, `install.sh`, `install.ps1` and `SHA256SUMS`; `.github/workflows/release.yml` publishes them when a `v*` tag is pushed. The README's one-line install downloads, verifies, then runs.
+- `CPF_REF` / `CPF_REPO_URL` for the (undocumented, unverified) piped mode of the installers.
+- Tests: `tests/install-test.sh` (end-to-end, temp `HOME`), `tests/parity-test.sh` (`install.sh` vs `install.ps1`, byte-identical results) and `tests/release-test.sh` (release assets, checksum verification, tampered download).
 - English `README.md`, `README.zh-CN.md`, diagrams in `docs/assets/`, `CONTRIBUTING.md`, `SECURITY.md`, CI workflow.
 
 ### Changed
 
 - One skill source (`SKILL.md`, `references/`, `docs/` layout). The DSH copy (project-root layout) is rendered at install time instead of kept as a second copy.
 - The DSH skill copy now carries the latest workflow text (plain-language replies in the ASD-STE100 style).
+- `SKILL.md` and the `AGENTS.md` template: "add no security checks" is now "add no extra security layer during development; never remove or bypass existing authentication, permission checks or input validation; validate external input as usual".
+- DSH preset: the plan-mode prompt restates every rule of DSH's standard plan-mode prompt (checked against deepseek-ai/deepseek-harness `687f282`), which the earlier preset had replaced.
+- The README recommends clone-then-run; the one-line install is an alternative that verifies a release archive first.
 - The skill is installed by copying instead of `git clone`; re-run the installer to update.
 - Default Qoder folder detection is the same on both platforms; an existing install decides where updates go.
 

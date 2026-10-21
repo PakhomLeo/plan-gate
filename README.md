@@ -95,9 +95,9 @@ They live in Doc 1 and win over any other instruction:
 
 ![Components and install targets](docs/assets/install-components.svg)
 
-Requirements: `bash` (macOS, Linux, WSL, Git Bash) or PowerShell 5.1+ on Windows. `git` is needed only for the piped one-line install. For the `dsh` component, DSH must have been started at least once, so that `profiles/` exists.
+Requirements: `bash` (macOS, Linux, WSL, Git Bash) or PowerShell 5.1+ on Windows, and `git` to clone. For the `dsh` component, DSH must have been started at least once, so that `profiles/` exists.
 
-### From a checkout (recommended)
+### Recommended: clone, then run
 
 ```bash
 git clone https://github.com/PakhomLeo/code-project-flow.git
@@ -140,21 +140,40 @@ Any client that loads `SKILL.md` skills from a folder can use the `skill` compon
 
 Start a new agent session afterwards; skills load at session start.
 
-### One-line install
+### Alternative: one-line install from a release (download, verify, run)
+
+Every release has these assets, built by [`.github/workflows/release.yml`](.github/workflows/release.yml) with [`scripts/make-release.sh`](scripts/make-release.sh):
+
+| Asset | What |
+| --- | --- |
+| `code-project-flow-vX.Y.Z.tar.gz`, `code-project-flow-vX.Y.Z.zip` | The tagged source tree, including both installers |
+| `install.sh`, `install.ps1` | The same installers as separate files |
+| `SHA256SUMS` | sha256 of the four files above |
+
+**The checksums are a release asset. They are not a file committed to the repository**, and they verify the downloaded release assets only. They protect against a broken or altered download. They do not protect against a compromised GitHub account, because the checksums come from the same place. The commands below download the archive, check it, and only then run the installer from the extracted folder, so nothing else is fetched.
+
+macOS / Linux (use `shasum -a 256 -c -` instead of `sha256sum -c -` on macOS without coreutils):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/install.sh | bash
+V=v1.0.0; B=https://github.com/PakhomLeo/code-project-flow/releases/download/$V
+mkdir -p cpf-$V && cd cpf-$V \
+  && curl -fsSLO "$B/code-project-flow-$V.tar.gz" && curl -fsSLO "$B/SHA256SUMS" \
+  && grep " code-project-flow-$V.tar.gz\$" SHA256SUMS | sha256sum -c - \
+  && tar xzf "code-project-flow-$V.tar.gz" && bash "code-project-flow-$V/install.sh"
 ```
+
+Windows (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/install.ps1 | iex
+$V = 'v1.0.0'; $B = "https://github.com/PakhomLeo/code-project-flow/releases/download/$V"; $f = "code-project-flow-$V.zip"
+Invoke-WebRequest "$B/$f" -OutFile $f; Invoke-WebRequest "$B/SHA256SUMS" -OutFile SHA256SUMS
+$want = (((Get-Content SHA256SUMS) -match "  $([regex]::Escape($f))$") -split '\s+')[0]
+if ((Get-FileHash $f -Algorithm SHA256).Hash -ne $want) { throw 'SHA256 mismatch: do not run it' }
+Expand-Archive $f -DestinationPath .
+powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
 ```
 
-This runs a script from the network without a checksum, and the script then clones the default branch. Prefer the checkout above. To pin a release, set `CPF_REF` (for example `CPF_REF=v1.0.0`); `CPF_REPO_URL` points at a fork. Pass options after `bash -s --`:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/install.sh | CPF_REF=v1.0.0 bash -s -- --components dsh
-```
+Add installer options at the end of the last line, for example `--components dsh` or `-Components dsh`. To check a file you already downloaded: `sha256sum -c --ignore-missing SHA256SUMS` (Linux), `shasum -a 256 -c --ignore-missing SHA256SUMS` (recent macOS), or `Get-FileHash FILE -Algorithm SHA256` and compare with the line in `SHA256SUMS` (Windows).
 
 ### Make it the default (Qoder)
 
@@ -213,7 +232,7 @@ What the installer writes into `$DSH_HOME`:
 | `plugins/quick-dev-plan-arm.mjs` | Opens plan mode when a plan is due |
 | `profiles/*/cordis.patch.yml` | One top-level `- insert:` entry with id `preset-quick-dev`, in every existing profile |
 
-The mode declaration ([`dsh/preset/quick-dev.patch.yml`](dsh/preset/quick-dev.patch.yml)) is a copy of DSH's standard mode plugin list with four changes: a persona suffix asking for plain-language replies, auto-loaded instruction files widened to `AGENTS.md`, `CLAUDE.md`, `MAP.md`, `HARNESS.md`, `TASK.md` with a 200 KB budget, a plan-mode prompt that explains the workflow, and one extra plugin row. The other rows were copied unchanged from standard mode when the preset was written, so the tool list is the same.
+The mode declaration ([`dsh/preset/quick-dev.patch.yml`](dsh/preset/quick-dev.patch.yml)) is a copy of DSH's standard mode plugin list with four changes: a persona suffix asking for plain-language replies, auto-loaded instruction files widened to `AGENTS.md`, `CLAUDE.md`, `MAP.md`, `HARNESS.md`, `TASK.md` with a 200 KB budget, a plan-mode prompt that explains the workflow and then restates every rule of DSH's standard plan-mode prompt (for example: agreement in the chat is not approval; no edits except the plan file, no commits, no formatters while planning; `exit_plan_mode` is the only way to submit; stay in plan mode if review is unavailable), and one extra plugin row. The other rows were copied unchanged from standard mode when the preset was written, so the tool list is the same.
 
 ![When the plugin opens plan mode](docs/assets/dsh-plan-arm.svg)
 
@@ -235,7 +254,7 @@ Known boundaries (by design):
 
 - Never use `sudo` or elevation. They write only to the chosen skills folder, the DSH home, and the backup folder (only with `--migrate-legacy`).
 - Overwrite or remove only what they installed: files listed in `.cpf-manifest`, a plugin whose hash matches a shipped version, and the one preset block. Anything else is reported and skipped.
-- The one-line install downloads and runs code without a checksum. Use a checkout, or pin `CPF_REF`.
+- Recommended install: clone and run. The release one-liner verifies the archive against the release's `SHA256SUMS` before it runs anything. Piping `install.sh` straight from the network into `bash` still works (it then clones the repository; `CPF_REF` pins a tag), but nothing is verified, so it is not documented as an install method.
 
 **What the agent gets:**
 
@@ -251,7 +270,7 @@ Report vulnerabilities as described in [SECURITY.md](SECURITY.md).
 
 `references/AGENTS.md` is the template meant for you to edit; put your copy in the project root. The agent must not change it.
 
-> **Note:** the template is written for **exploratory projects**. It tells the agent not to add security checks, permissions, retries or caching to temporary components yet. For production code, replace that paragraph with your own bar before you use it.
+> **Note:** the template is written for **exploratory projects**. While a project is in development, it tells the agent not to add *extra* security layers, retries or caching to temporary components. It also says the agent must not remove or bypass existing authentication, permission checks or input validation, and must still validate external input. For production code, review that paragraph and set your own bar.
 
 `SKILL.md` is editable too, but it is the workflow itself; changes alter how the five phases run. Edit the source in this repository (with `docs/` paths) and reinstall; the installer renders the DSH layout.
 
@@ -272,8 +291,9 @@ Good fit: exploratory projects where blocks may be thrown away; long-lived repos
 ├── install.sh  install.ps1      # one installer, two platforms, same behaviour
 ├── tests/
 │   ├── install-test.sh          # end-to-end test of install.sh in a temp HOME
-│   └── parity-test.sh           # install.sh vs install.ps1, byte-identical results
-├── scripts/                     # diagram generator and PNG preview export
+│   ├── parity-test.sh           # install.sh vs install.ps1, byte-identical results
+│   └── release-test.sh          # release assets, SHA256SUMS, download-verify-run
+├── scripts/                     # make-release.sh (assets + SHA256SUMS), diagram generator, PNG export
 ├── docs/assets/                 # SVG diagrams (light and dark aware)
 ├── VERSION  CHANGELOG.md  LICENSE  CONTRIBUTING.md  SECURITY.md
 └── README.md  README.zh-CN.md
@@ -286,10 +306,13 @@ When this repository is cloned straight into a skills folder (the earlier manual
 ## Development and tests
 
 ```bash
-shellcheck install.sh tests/*.sh
+shellcheck install.sh scripts/*.sh tests/*.sh
 bash tests/install-test.sh                 # install.sh, every case in a throwaway HOME
 bash tests/parity-test.sh                  # needs PowerShell 7 (pwsh)
+bash tests/release-test.sh                 # release assets, SHA256SUMS, download-verify-run
 ```
+
+Releases: push a tag `vX.Y.Z` that matches `VERSION`; [`.github/workflows/release.yml`](.github/workflows/release.yml) runs the tests, builds the assets with `scripts/make-release.sh` and publishes them.
 
 The tests never touch your real home folder. See [CONTRIBUTING.md](CONTRIBUTING.md).
 

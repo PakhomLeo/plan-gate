@@ -95,9 +95,9 @@
 
 ![组件和安装位置](docs/assets/install-components.svg)
 
-前置：`bash`（macOS、Linux、WSL、Git Bash），或 Windows 上的 PowerShell 5.1 及以上。只有一行命令安装需要 `git`。`dsh` 组件要求 DSH 至少启动过一次（已经生成 `profiles/`）。
+前置：`bash`（macOS、Linux、WSL、Git Bash），或 Windows 上的 PowerShell 5.1 及以上；克隆需要 `git`。`dsh` 组件要求 DSH 至少启动过一次（已经生成 `profiles/`）。
 
-### 从克隆的仓库安装（推荐）
+### 推荐：先克隆，再运行
 
 ```bash
 git clone https://github.com/PakhomLeo/code-project-flow.git
@@ -140,21 +140,40 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 装完新开一个会话，Skill 在会话开始时加载。
 
-### 一行命令安装
+### 备选：从 Release 一行命令安装（先下载、再校验、后执行）
+
+每个 Release 都带这些附件，由 [`.github/workflows/release.yml`](.github/workflows/release.yml) 调用 [`scripts/make-release.sh`](scripts/make-release.sh) 生成：
+
+| 附件 | 内容 |
+| --- | --- |
+| `code-project-flow-vX.Y.Z.tar.gz`、`code-project-flow-vX.Y.Z.zip` | 该标签的源码树，含两个安装脚本 |
+| `install.sh`、`install.ps1` | 同样的安装脚本，单独提供 |
+| `SHA256SUMS` | 上面四个文件的 sha256 |
+
+**校验和是 Release 附件，不是提交在仓库里的文件**，只用来校验下载到的 Release 附件。它能发现下载损坏或被篡改，但防不了 GitHub 账号本身被攻破，因为校验和来自同一个地方。下面的命令先下载压缩包，校验通过后才从解压目录运行安装脚本，不会再去拉别的东西。
+
+macOS / Linux（macOS 没装 coreutils 时，把 `sha256sum -c -` 换成 `shasum -a 256 -c -`）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/install.sh | bash
+V=v1.0.0; B=https://github.com/PakhomLeo/code-project-flow/releases/download/$V
+mkdir -p cpf-$V && cd cpf-$V \
+  && curl -fsSLO "$B/code-project-flow-$V.tar.gz" && curl -fsSLO "$B/SHA256SUMS" \
+  && grep " code-project-flow-$V.tar.gz\$" SHA256SUMS | sha256sum -c - \
+  && tar xzf "code-project-flow-$V.tar.gz" && bash "code-project-flow-$V/install.sh"
 ```
+
+Windows（PowerShell）：
 
 ```powershell
-irm https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/install.ps1 | iex
+$V = 'v1.0.0'; $B = "https://github.com/PakhomLeo/code-project-flow/releases/download/$V"; $f = "code-project-flow-$V.zip"
+Invoke-WebRequest "$B/$f" -OutFile $f; Invoke-WebRequest "$B/SHA256SUMS" -OutFile SHA256SUMS
+$want = (((Get-Content SHA256SUMS) -match "  $([regex]::Escape($f))$") -split '\s+')[0]
+if ((Get-FileHash $f -Algorithm SHA256).Hash -ne $want) { throw 'SHA256 mismatch: do not run it' }
+Expand-Archive $f -DestinationPath .
+powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
 ```
 
-这会直接运行网络上的脚本，没有校验和，脚本随后克隆默认分支。更推荐上面的克隆方式。要固定版本，设置 `CPF_REF`（例如 `CPF_REF=v1.0.0`）；`CPF_REPO_URL` 可指向你的 fork。传参数放在 `bash -s --` 后面：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/install.sh | CPF_REF=v1.0.0 bash -s -- --components dsh
-```
+安装参数加在最后一行末尾，比如 `--components dsh` 或 `-Components dsh`。校验已经下载好的文件：Linux 用 `sha256sum -c --ignore-missing SHA256SUMS`，较新的 macOS 用 `shasum -a 256 -c --ignore-missing SHA256SUMS`，Windows 用 `Get-FileHash 文件 -Algorithm SHA256`，再和 `SHA256SUMS` 里那一行对照。
 
 ### 设为默认（Qoder）
 
@@ -213,7 +232,7 @@ curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/in
 | `plugins/quick-dev-plan-arm.mjs` | 在该交计划时打开计划模式 |
 | `profiles/*/cordis.patch.yml` | 每个已有 profile 里一段 id 为 `preset-quick-dev` 的顶层 `- insert:` 条目 |
 
-模式声明（[`dsh/preset/quick-dev.patch.yml`](dsh/preset/quick-dev.patch.yml)）复制自 DSH 标准模式的插件列表，改了四处：persona 后缀要求用简化技术语言回复；自动加载的说明文件扩大到 `AGENTS.md`、`CLAUDE.md`、`MAP.md`、`HARNESS.md`、`TASK.md`，预算 200 KB；计划模式的提示词改为讲解这套流程；多一行插件。其余各行在编写预设时照抄标准模式，所以工具目录相同。
+模式声明（[`dsh/preset/quick-dev.patch.yml`](dsh/preset/quick-dev.patch.yml)）复制自 DSH 标准模式的插件列表，改了四处：persona 后缀要求用简化技术语言回复；自动加载的说明文件扩大到 `AGENTS.md`、`CLAUDE.md`、`MAP.md`、`HARNESS.md`、`TASK.md`，预算 200 KB；计划模式的提示词先讲解这套流程，再逐条保留 DSH 标准模式计划模式的全部规则（例如：对话里的同意不算批准；计划阶段除计划文件外不改文件、不提交、不跑格式化；只能通过 `exit_plan_mode` 提交；评审不可用时留在计划模式）；多一行插件。其余各行在编写预设时照抄标准模式，所以工具目录相同。
 
 ![插件什么时候打开计划模式](docs/assets/dsh-plan-arm.svg)
 
@@ -235,7 +254,7 @@ curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/in
 
 - 从不使用 `sudo` 或提权。只写选定的 skills 目录、DSH 主目录，以及（仅在 `--migrate-legacy` 时）备份目录。
 - 只覆盖或删除自己装的东西：`.cpf-manifest` 里列出的文件、哈希与发布版本一致的插件、那一段预设。其他一律报告并跳过。
-- 一行命令安装会下载并运行没有校验和的代码。请用克隆方式，或固定 `CPF_REF`。
+- 推荐的安装方式是先克隆再运行。Release 一行命令会先用 Release 的 `SHA256SUMS` 校验压缩包，再运行。把 `install.sh` 从网络直接管道给 `bash` 仍然可用（它会再去克隆仓库，`CPF_REF` 可固定标签），但没有任何校验，所以不作为文档里的安装方式。
 
 **助手得到什么：**
 
@@ -251,7 +270,7 @@ curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/in
 
 `references/AGENTS.md` 是专门留给你改的模板，改好后放到项目根。助手不得自行修改它。
 
-> **注意：** 这份模板是为**探索期项目**写的。它要求助手暂时不给临时组件加安全检查、权限、重试和缓存。用于生产代码前，请把这一段换成你自己的标准。
+> **注意：** 这份模板是为**探索期项目**写的。开发中，它要求助手不给临时组件新增*额外的*安全层、重试和缓存；同时写明已有的认证、权限和输入校验不得删除、不得绕过，涉及外部输入的地方照常校验。用于生产代码前，请检查这一段，按你自己的标准调整。
 
 `SKILL.md` 也可以改，但它就是流程本身，改了会改变五个阶段的执行方式。请改本仓库里的源文件（用 `docs/` 路径）再重新安装，安装脚本会生成 DSH 布局。
 
@@ -272,8 +291,9 @@ curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/in
 ├── install.sh  install.ps1      # 一套安装脚本，两个平台，行为一致
 ├── tests/
 │   ├── install-test.sh          # 在临时 HOME 里端到端测试 install.sh
-│   └── parity-test.sh           # install.sh 与 install.ps1 结果逐字节一致
-├── scripts/                     # 配图生成和 PNG 预览导出
+│   ├── parity-test.sh           # install.sh 与 install.ps1 结果逐字节一致
+│   └── release-test.sh          # Release 附件、SHA256SUMS、先下载再校验后执行
+├── scripts/                     # make-release.sh（附件和 SHA256SUMS）、配图生成、PNG 导出
 ├── docs/assets/                 # SVG 配图（适配深浅色）
 ├── VERSION  CHANGELOG.md  LICENSE  CONTRIBUTING.md  SECURITY.md
 └── README.md  README.zh-CN.md
@@ -286,10 +306,13 @@ curl -fsSL https://raw.githubusercontent.com/PakhomLeo/code-project-flow/main/in
 ## 开发与测试
 
 ```bash
-shellcheck install.sh tests/*.sh
+shellcheck install.sh scripts/*.sh tests/*.sh
 bash tests/install-test.sh                 # install.sh，所有用例都在临时 HOME 里跑
 bash tests/parity-test.sh                  # 需要 PowerShell 7（pwsh）
+bash tests/release-test.sh                 # Release 附件、SHA256SUMS、先下载再校验后执行
 ```
+
+发布：推送与 `VERSION` 一致的标签 `vX.Y.Z`，[`.github/workflows/release.yml`](.github/workflows/release.yml) 会跑测试、用 `scripts/make-release.sh` 生成附件并发布。
 
 测试不会碰你真实的主目录。见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 

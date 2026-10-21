@@ -96,6 +96,9 @@ check 'placeholder filled with a file:// URL' '! grep -q __QUICK_DEV_PLUGIN_URL_
 check 'empty [] layer replaced, not appended (LF and CRLF)' '! grep -qx "\[\]" "$D/profiles/desktop/cordis.patch.yml" && ! grep -q "^\[\]" "$D/profiles/cli/cordis.patch.yml"'
 check 'user rows kept' 'grep -q "id: my-row" "$D/profiles/web/cordis.patch.yml"'
 check 'CRLF layer stays CRLF' '[ "$(grep -c $'"'"'\r$'"'"' "$D/profiles/headless/cordis.patch.yml")" = "$(wc -l < "$D/profiles/headless/cordis.patch.yml")" ]'
+check 'DSH copy keeps the security wording of the source' 'for f in SKILL.md references/AGENTS.md; do grep -q "已有的认证、权限和输入校验不得删除，不得绕过。涉及外部输入的地方照常校验。" "$D/skills/code-project-flow/$f" || exit 1; done'
+check 'no copy still says "add no security checks"' '! grep -rqE "不加安全检查" "$ROOT/SKILL.md" "$ROOT/references" "$D/skills/code-project-flow"'
+check 'preset keeps the standard plan-mode rules' 'grep -q "对话里的同意不算批准" "$D/profiles/web/cordis.patch.yml" && grep -q "不提交，也不用别的方式执行计划" "$D/profiles/web/cordis.patch.yml" && grep -q "评审通道不可用或被中止" "$D/profiles/web/cordis.patch.yml"'
 check 'patched layers are valid YAML' 'yaml_ok "$D"/profiles/*/cordis.patch.yml'
 sumd="$(tree_sum "$D")"; run --components dsh
 check 're-run is idempotent (byte-identical)' '[ "$sumd" = "$(tree_sum "$D")" ]'

@@ -1,0 +1,31 @@
+name: release
+
+# Push a tag vX.Y.Z (matching VERSION) to publish a release whose assets are
+# the source archives, the two installers and SHA256SUMS.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: tests
+        run: |
+          shellcheck install.sh scripts/*.sh tests/*.sh
+          bash tests/install-test.sh
+          bash tests/release-test.sh
+      - name: build assets
+        run: bash scripts/make-release.sh "$GITHUB_REF_NAME" dist
+      - name: verify checksums
+        run: cd dist && sha256sum -c SHA256SUMS
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md. Verify downloads against SHA256SUMS."
