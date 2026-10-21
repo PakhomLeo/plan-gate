@@ -2,9 +2,11 @@
 
 All notable changes are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] - Unreleased
+## [Unreleased]
 
-First release of **plan-gate** (https://github.com/PakhomLeo/plan-gate), the merged project. The installed skill keeps the name `code-project-flow`. Tag: `v1.0.0`. The date is filled in when the release is published.
+## [1.0.0] - 2026-10-21
+
+First release of **plan-gate** (https://github.com/PakhomLeo/plan-gate), the merged project. The installed skill keeps the name `code-project-flow`. Tag: `v1.0.0`.
 
 ### Added
 
