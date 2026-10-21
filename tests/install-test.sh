@@ -29,6 +29,8 @@ fresh_home() {
 }
 run() { bash "$INSTALL" "$@" > "$WORK/out" 2>&1; }
 run_rc() { set +e; bash "$INSTALL" "$@" > "$WORK/out" 2>&1; rc=$?; set -e; }
+# BSD wc (macOS) pads the count with spaces; strip them before comparing.
+count_lines() { wc -l < "$1" | tr -d ' '; }
 tree_sum() { (cd "$1" && find . -type f -print0 | sort -z | xargs -0 sha256sum) | sha256sum | cut -d' ' -f1; }
 
 make_dsh() {
@@ -90,14 +92,17 @@ fresh_home dsh
 make_dsh
 run --components dsh
 D="$HOME/.dsh"
-check 'auto-detect would also pick dsh' 'bash "$INSTALL" --dry-run | grep -q "auto-detected): dsh"'
+# Captured to a file, not piped: grep -q stops reading at the first match, and
+# where SIGPIPE is ignored (the macOS runner) the installer then gets EPIPE.
+bash "$INSTALL" --dry-run > "$WORK/dry" 2>&1
+check 'auto-detect would also pick dsh' 'grep -q "auto-detected): dsh" "$WORK/dry"'
 check 'plugin installed' 'cmp -s "$D/plugins/quick-dev-plan-arm.mjs" "$ROOT/dsh/plugin/quick-dev-plan-arm.mjs"'
 check 'skill uses the project-root layout' '! grep -q "docs/TASK.md" "$D/skills/code-project-flow/SKILL.md" && grep -q "\`TASK.md\`" "$D/skills/code-project-flow/SKILL.md"'
 check 'one preset block per profile' '[ "$(cat "$D"/profiles/*/cordis.patch.yml | grep -c "id: preset-quick-dev")" = 4 ]'
 check 'placeholder filled with a file:// URL' '! grep -q __QUICK_DEV_PLUGIN_URL__ "$D"/profiles/*/cordis.patch.yml && grep -q "file://$D/plugins/quick-dev-plan-arm.mjs" "$D/profiles/web/cordis.patch.yml"'
 check 'empty [] layer replaced, not appended (LF and CRLF)' '! grep -qx "\[\]" "$D/profiles/desktop/cordis.patch.yml" && ! grep -q "^\[\]" "$D/profiles/cli/cordis.patch.yml"'
 check 'user rows kept' 'grep -q "id: my-row" "$D/profiles/web/cordis.patch.yml"'
-check 'CRLF layer stays CRLF' '[ "$(grep -c $'"'"'\r$'"'"' "$D/profiles/headless/cordis.patch.yml")" = "$(wc -l < "$D/profiles/headless/cordis.patch.yml")" ]'
+check 'CRLF layer stays CRLF' '[ "$(grep -c $'"'"'\r$'"'"' "$D/profiles/headless/cordis.patch.yml")" -eq "$(count_lines "$D/profiles/headless/cordis.patch.yml")" ] && [ "$(count_lines "$D/profiles/headless/cordis.patch.yml")" -gt 2 ]'
 check 'DSH copy keeps the security wording of the source' 'for f in SKILL.md references/AGENTS.md; do grep -q "已有的认证、权限和输入校验不得删除，不得绕过。涉及外部输入的地方照常校验。" "$D/skills/code-project-flow/$f" || exit 1; done'
 check 'no copy still says "add no security checks"' '! grep -rqE "不加安全检查" "$ROOT/SKILL.md" "$ROOT/references" "$D/skills/code-project-flow"'
 check 'preset keeps the standard plan-mode rules' 'grep -q "对话里的同意不算批准" "$D/profiles/web/cordis.patch.yml" && grep -q "不提交，也不用别的方式执行计划" "$D/profiles/web/cordis.patch.yml" && grep -q "评审通道不可用或被中止" "$D/profiles/web/cordis.patch.yml"'

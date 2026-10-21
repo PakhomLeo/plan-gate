@@ -33,6 +33,16 @@ function Invoke-Script([string]$Path, [string[]]$Arguments) {
     $code = $LASTEXITCODE; $ErrorActionPreference = $prev
     return New-Object PSObject -Property @{ Code = $code; Out = $out }
 }
+# The former README's one-liner: irm <raw install.ps1> | iex. raw.githubusercontent.com
+# serves text/plain; charset=utf-8, so irm hands iex the script decoded as UTF-8.
+function Invoke-ScriptViaIex([string]$Path) {
+    $literal = $Path.Replace("'", "''")
+    $command = "[System.IO.File]::ReadAllText('$literal', [System.Text.Encoding]::UTF8) | Invoke-Expression"
+    $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+    $out = & $shell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command $command 2>&1 | Out-String
+    $code = $LASTEXITCODE; $ErrorActionPreference = $prev
+    return New-Object PSObject -Property @{ Code = $code; Out = $out }
+}
 function Get-TreeHash([string]$Dir) {
     $full = (Resolve-Path -LiteralPath $Dir).Path
     $lines = @(Get-ChildItem -LiteralPath $full -Recurse -File -Force | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' } | ForEach-Object {
@@ -61,6 +71,7 @@ try {
     $env:GIT_CONFIG_VALUE_0 = 'https://github.com/PakhomLeo/code-project-flow.git'
     $old = Invoke-Script (Join-Path $src 'install.ps1') @('-SkillsRoot', $skills)
     Remove-Item Env:GIT_CONFIG_COUNT, Env:GIT_CONFIG_KEY_0, Env:GIT_CONFIG_VALUE_0
+    if ($old.Code -ne 0) { Write-Host "  former installer exit $($old.Code):"; Write-Host $old.Out }
     $L = Join-Path $skills 'code-project-flow'
     Check 'fixture: the former installer cloned PakhomLeo/code-project-flow' (($old.Code -eq 0) -and (Select-String -LiteralPath (Join-Path $L '.git/config') -SimpleMatch 'url = https://github.com/PakhomLeo/code-project-flow.git' -Quiet) -and (Test-Path -LiteralPath (Join-Path $L 'README.en.md')))
     Set-Content -LiteralPath (Join-Path $L 'my-notes.md') -Value 'mine'
@@ -83,9 +94,29 @@ try {
     $layer = Join-Path $web 'cordis.patch.yml'
     [System.IO.File]::WriteAllText($layer, "# user layer`n- insert:`n    - id: my-row`n      name: my-plugin`n")
     $layerHash = (Get-FileHash -LiteralPath $layer -Algorithm SHA256).Hash
-    $old = Invoke-Script (Join-Path $src 'install.ps1') @('-DshHome', $D)
+    if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        # The former install.ps1 has no BOM and its last message is Chinese.
+        # Windows PowerShell 5.1 reads a BOM-less script file as ANSI (cp1252),
+        # where the UTF-8 bytes of that text contain 0x91, a curly quote that
+        # PowerShell takes as a string terminator: run with -File it does not
+        # even parse, so no 5.1 user got an install that way. What did work on
+        # 5.1 is the README's one-liner (irm | iex), which fetches a checkout
+        # with git; replay exactly that, offline, as in section 1.
+        $bare = Join-Path $work 'dsh.git'
+        Invoke-Git clone -q --bare (Join-Path $fixtures 'dsh-quick-dev.bundle') $bare
+        $env:GIT_CONFIG_COUNT = '1'
+        $env:GIT_CONFIG_KEY_0 = 'url.' + (New-Object System.Uri $bare).AbsoluteUri + '.insteadOf'
+        $env:GIT_CONFIG_VALUE_0 = 'https://github.com/PakhomLeo/dsh-quick-dev.git'
+        $env:DSH_HOME = $D   # a piped script takes no arguments
+        $old = Invoke-ScriptViaIex (Join-Path $src 'install.ps1')
+        Remove-Item Env:GIT_CONFIG_COUNT, Env:GIT_CONFIG_KEY_0, Env:GIT_CONFIG_VALUE_0, Env:DSH_HOME
+    }
+    else {
+        $old = Invoke-Script (Join-Path $src 'install.ps1') @('-DshHome', $D)
+    }
     $skill = Join-Path $D 'skills/code-project-flow'
     Check 'fixture: the former installer wrote skill, plugin and block' (($old.Code -eq 0) -and (Test-Path -LiteralPath (Join-Path $skill 'SKILL.md')) -and (Test-Path -LiteralPath (Join-Path $D 'plugins/quick-dev-plan-arm.mjs')) -and (Select-String -LiteralPath $layer -SimpleMatch 'id: preset-quick-dev' -Quiet))
+    if ($old.Code -ne 0) { Write-Host "  former installer exit $($old.Code):"; Write-Host $old.Out }
     $tmp = $layer + '.dsh-quick-dev.tmp'
     Set-Content -LiteralPath $tmp -Value 'partial'   # what an interrupted former run leaves
     $before = Get-TreeHash $D

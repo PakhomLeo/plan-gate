@@ -34,7 +34,7 @@ git -C "$WORK/repo" tag "$V"
 echo "1. build $V"
 bash "$WORK/repo/scripts/make-release.sh" "$V" "$WORK/dist" > "$WORK/build.out"
 check 'all assets present' '[ -f "$WORK/dist/$NAME.tar.gz" ] && [ -f "$WORK/dist/$NAME.zip" ] && [ -f "$WORK/dist/install.sh" ] && [ -f "$WORK/dist/install.ps1" ] && [ -f "$WORK/dist/SHA256SUMS" ]'
-check 'SHA256SUMS lists four files' '[ "$(wc -l < "$WORK/dist/SHA256SUMS")" = 4 ]'
+check 'SHA256SUMS lists four files' '[ "$(wc -l < "$WORK/dist/SHA256SUMS" | tr -d " ")" = 4 ]'
 check 'a tag that does not match VERSION is refused' '! bash "$WORK/repo/scripts/make-release.sh" HEAD "$WORK/x" >/dev/null 2>&1'
 
 echo '2. download, verify, run (README commands, file:// instead of https://)'
