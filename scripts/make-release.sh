@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Build the release assets for one tag into an output folder:
 #
-#   code-project-flow-vX.Y.Z.tar.gz   git archive of the tag (Linux / macOS)
-#   code-project-flow-vX.Y.Z.zip      git archive of the tag (Windows)
-#   install.sh  install.ps1           the installers from the same tag
-#   SHA256SUMS                        sha256 of every file above
+#   plan-gate-vX.Y.Z.tar.gz   git archive of the tag (Linux / macOS)
+#   plan-gate-vX.Y.Z.zip      git archive of the tag (Windows)
+#   install.sh  install.ps1   the installers from the same tag
+#   SHA256SUMS                sha256 of every file above
 #
 # Usage: scripts/make-release.sh vX.Y.Z [OUTDIR]     (default OUTDIR: dist)
 #
@@ -21,7 +21,7 @@ git rev-parse --verify -q "$tag^{commit}" >/dev/null || { echo "No such tag or c
 version="$(git show "$tag:VERSION" | tr -d ' \r\n')"
 [ "v$version" = "$tag" ] || { echo "Tag $tag does not match VERSION $version" >&2; exit 1; }
 
-name="code-project-flow-$tag"
+name="plan-gate-$tag"
 mkdir -p "$out"
 git archive --format=tar.gz --prefix="$name/" -o "$out/$name.tar.gz" "$tag"
 git archive --format=zip --prefix="$name/" -o "$out/$name.zip" "$tag"

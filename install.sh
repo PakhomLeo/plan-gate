@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Install, update or uninstall code-project-flow.
+# Install, update or uninstall plan-gate (the skill it installs is named
+# code-project-flow, see README "Skill name").
 #
 # Components (pick with --components, default: auto-detect):
 #   skill  The workflow skill (SKILL.md + references/) for any agent client that
@@ -14,12 +15,12 @@
 #   - It never uses sudo and never writes outside the chosen skills folder, the
 #     DSH home and (only with --migrate-legacy) the backup folder.
 #   - It only overwrites or removes files it installed itself: those listed in
-#     the .cpf-manifest file it leaves in each skill folder, a plugin file whose
+#     the .plan-gate-manifest file it leaves in each skill folder, a plugin file whose
 #     content matches a shipped version, and the one preset block it inserts.
 #   - An older install (from the former code-project-flow or dsh-quick-dev
 #     installers) has no manifest. It is left alone unless you pass
 #     --migrate-legacy or answer "y" at the prompt; then it is moved into
-#     ~/.code-project-flow-backups/<timestamp>/, never deleted.
+#     ~/.plan-gate-backups/<timestamp>/, never deleted.
 #
 # Console messages are English on purpose: this script also runs under
 # non-UTF-8 locales where translated output would turn into mojibake.
@@ -27,13 +28,13 @@
 # bash 3.2 (macOS) compatible: no arrays under set -u, no associative arrays.
 set -eu
 
-CPF_REPO_URL="${CPF_REPO_URL:-https://github.com/PakhomLeo/code-project-flow.git}"
-CPF_REF="${CPF_REF:-}"
+PLAN_GATE_REPO_URL="${PLAN_GATE_REPO_URL:-https://github.com/PakhomLeo/plan-gate.git}"
+PLAN_GATE_REF="${PLAN_GATE_REF:-}"
 SKILL_NAME='code-project-flow'
 PLUGIN_FILE='quick-dev-plan-arm.mjs'
 PLACEHOLDER='__QUICK_DEV_PLUGIN_URL__'
 PRESET_ID='preset-quick-dev'
-MANIFEST='.cpf-manifest'
+MANIFEST='.plan-gate-manifest'
 # sha256 of every plugin version ever shipped (LF line endings). A plugin file
 # with one of these hashes is ours and may be replaced or removed.
 # dsh-quick-dev 2026-09-29..2026-10-21 shipped one plugin version.
@@ -60,7 +61,7 @@ Usage: install.sh [options]
   -h, --help          Show this help.
 
 Environment (only used when the script is not run from a checkout):
-  CPF_REPO_URL        Repository to fetch.  CPF_REF  Tag or branch to fetch.
+  PLAN_GATE_REPO_URL        Repository to fetch.  PLAN_GATE_REF  Tag or branch to fetch.
 USAGE
 }
 
@@ -99,7 +100,7 @@ while [ $# -gt 0 ]; do
 done
 
 STAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP_ROOT="$HOME/.code-project-flow-backups/$STAMP"
+BACKUP_ROOT="$HOME/.plan-gate-backups/$STAMP"
 skipped=0
 
 say() { printf '==> %s\n' "$*"; }
@@ -142,11 +143,11 @@ source_root="$(checkout_root)"
 if [ -z "$source_root" ] && [ "$uninstall" -eq 0 ]; then
   command -v git >/dev/null 2>&1 || { echo 'git is required but was not found on PATH.' >&2; exit 1; }
   temporary="$(mktemp -d)"
-  say "Fetching $CPF_REPO_URL ${CPF_REF:+(ref $CPF_REF)}"
-  if [ -n "$CPF_REF" ]; then
-    git clone --quiet --depth 1 --branch "$CPF_REF" "$CPF_REPO_URL" "$temporary/src"
+  say "Fetching $PLAN_GATE_REPO_URL ${PLAN_GATE_REF:+(ref $PLAN_GATE_REF)}"
+  if [ -n "$PLAN_GATE_REF" ]; then
+    git clone --quiet --depth 1 --branch "$PLAN_GATE_REF" "$PLAN_GATE_REPO_URL" "$temporary/src"
   else
-    git clone --quiet --depth 1 "$CPF_REPO_URL" "$temporary/src"
+    git clone --quiet --depth 1 "$PLAN_GATE_REPO_URL" "$temporary/src"
   fi
   source_root="$temporary/src"
 fi
@@ -228,6 +229,57 @@ confirm_legacy() {
   return 1
 }
 
+# What the two former installers wrote (checked against their source):
+#   code-project-flow (2026-09-28..10-03): `git clone --depth 1` of the whole
+#     repository into <skills>/code-project-flow, where <skills> was the first
+#     argument, ~/.qoder-cn/skills or ~/.qoder/skills. Marker: .git/config with
+#     origin github.com/PakhomLeo/code-project-flow.
+#   dsh-quick-dev (2026-09-29..10-21): $DSH_HOME/skills/code-project-flow/ (a
+#     copy of SKILL.md + references/, no LICENSE, no marker file),
+#     $DSH_HOME/plugins/quick-dev-plan-arm.mjs (see KNOWN_PLUGIN_SHA256), one
+#     `- insert:` block with `- id: preset-quick-dev` in every
+#     profiles/*/cordis.patch.yml, and, only if a run was interrupted,
+#     profiles/*/cordis.patch.yml.dsh-quick-dev.tmp.
+LEGACY_CHECKOUT_FILES='.gitattributes .gitignore LICENSE README.en.md README.md SKILL.md install.ps1 install.sh references/AGENTS.md references/HARNESS.md references/MAP.md references/TASK.md'
+LEGACY_COPY_FILES='SKILL.md references/AGENTS.md references/HARNESS.md references/MAP.md references/TASK.md'
+LEGACY_TMP_SUFFIX='.dsh-quick-dev.tmp'
+
+legacy_kind() {
+  local dir="$1"
+  if [ -f "$dir/.git/config" ] && grep -qE 'github\.com[:/]PakhomLeo/code-project-flow(\.git)?[[:space:]]*$' "$dir/.git/config"; then
+    echo 'code-project-flow git checkout'
+  elif [ -e "$dir/.git" ]; then
+    echo 'git checkout of unknown origin'
+  else
+    case "$dir" in
+      "$DSH_ROOT/skills/"*) echo 'dsh-quick-dev copy' ;;
+      *) echo 'manual copy' ;;
+    esac
+  fi
+}
+
+legacy_extras() {
+  # Files in a legacy folder that the former installer did not write.
+  local dir="$1" known f
+  case "$(legacy_kind "$dir")" in
+    'code-project-flow git checkout') known="$LEGACY_CHECKOUT_FILES" ;;
+    *) known="$LEGACY_COPY_FILES" ;;
+  esac
+  (cd "$dir" && find . -path ./.git -prune -o -type f -print | sed 's#^\./##' | LC_ALL=C sort) | while IFS= read -r f; do
+    case " $known " in *" $f "*) ;; *) printf '%s\n' "$f" ;; esac
+  done
+}
+
+describe_legacy() {
+  local dir="$1" extras
+  say "Found a $(legacy_kind "$dir") made by a former installer: $dir"
+  extras="$(legacy_extras "$dir")"
+  if [ -n "$extras" ]; then
+    say "  Files the former installer did not write (they stay in the folder or its backup):"
+    printf '%s\n' "$extras" | sed 's#^#      #'
+  fi
+}
+
 legacy_label() { printf '%s' "$1" | sed 's#^/##; s#[/\\: ]#_#g'; }
 
 render() {
@@ -254,6 +306,7 @@ install_skill() {
       warn "$dir exists and is not a code-project-flow install. Rename or remove it yourself, then run again."
       skipped=1; return 0 ;;
     legacy)
+      describe_legacy "$dir"
       if confirm_legacy "$dir"; then backup "$dir" "$(legacy_label "$dir")"; state=absent
       else
         warn "Legacy install left untouched: $dir. Re-run with --migrate-legacy to move it to a backup folder and install."
@@ -274,7 +327,7 @@ install_skill() {
     fi
   done
   if [ "$dry_run" -eq 0 ]; then
-    { printf '# code-project-flow %s layout=%s. Files below were written by install.sh/install.ps1.\n' "$VERSION" "$layout"
+    { printf '# plan-gate %s skill=code-project-flow layout=%s. Files below were written by install.sh/install.ps1.\n' "$VERSION" "$layout"
       printf '%s\n' "$SKILL_FILES"; } > "$dir/$MANIFEST"
   fi
   installed=1
@@ -288,6 +341,7 @@ uninstall_skill() {
     absent) say "Nothing at $dir" ;;
     foreign) warn "$dir is not a code-project-flow install; left untouched." ;;
     legacy)
+      describe_legacy "$dir"
       if confirm_legacy "$dir"; then backup "$dir" "$(legacy_label "$dir")"
       else warn "Legacy install left untouched: $dir. Re-run with --migrate-legacy to move it to a backup folder."; skipped=1; fi ;;
     owned)
@@ -312,7 +366,7 @@ note_other_legacy() {
     dir="$dir/$SKILL_NAME"
     case ",$handled," in *",$dir,"*) continue ;; esac
     if [ "$(skill_state "$dir")" = legacy ]; then
-      say "Note: an older install also exists at $dir (not changed). Use --components/--skills-dir to manage it."
+      say "Note: a $(legacy_kind "$dir") also exists at $dir (not changed). Use --components/--skills-dir to manage it."
     fi
   done
 }
@@ -330,7 +384,7 @@ patch_layer() {
   local mode="$1" patch="$2" block="$3" url="$4"
   local trailing=0
   if [ -s "$patch" ] && [ -z "$(tail -c 1 "$patch")" ]; then trailing=1; fi
-  local work="$patch.cpf.tmp"
+  local work="$patch.plan-gate.tmp"
   awk -v mode="$mode" -v preset="$PRESET_ID" -v placeholder="$PLACEHOLDER" \
       -v url="$url" -v trailing="$trailing" -v blockpath="$block" '
     function fill(s,   p) {
@@ -432,6 +486,14 @@ do_dsh() {
   url="$(printf '%s' "file://$plugin" | sed 's/ /%20/g')"
   handled="$handled,$skill"
 
+  # Leftovers of an interrupted dsh-quick-dev run: moved aside only on request.
+  local tmp
+  for tmp in "$DSH_ROOT"/profiles/*/cordis.patch.yml"$LEGACY_TMP_SUFFIX"; do
+    [ -f "$tmp" ] || continue
+    if [ "$migrate" -eq 1 ]; then backup "$tmp" "$(legacy_label "$tmp")"
+    else say "Note: leftover of an interrupted dsh-quick-dev run: $tmp (not changed; --migrate-legacy moves it to the backup folder)."; fi
+  done
+
   if [ "$uninstall" -eq 1 ]; then
     printf '%s\n' "$patches" | while IFS= read -r patch; do
       if grep -qF -- "- id: $PRESET_ID" "$patch"; then
@@ -463,8 +525,9 @@ do_dsh() {
   say "Installed $plugin"
 
   printf '%s\n' "$patches" | while IFS= read -r patch; do
+    if grep -qF -- "- id: $PRESET_ID" "$patch"; then verb='Replaced the existing'; else verb='Wrote the'; fi
     act "write preset block into $patch" -- patch_layer write "$patch" "$source_root/dsh/preset/quick-dev.patch.yml" "$url"
-    say "Wrote preset 'quick-dev' into $patch"
+    say "$verb preset 'quick-dev' block in $patch"
   done
   say 'DSH: restart DSH, start a new blank session and pick the quick dev mode (second in the list).'
 }

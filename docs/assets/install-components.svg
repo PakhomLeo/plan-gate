@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="460" viewBox="0 0 960 460" role="img" aria-labelledby="title desc">
-<title id="title">code-project-flow: components and install targets</title>
+<title id="title">plan-gate: components and install targets</title>
 <desc id="desc">The installer copies the skill into a skills folder and, for DSH, also installs the plan-arm plugin and a preset block in every profile patch layer.</desc>
 <style>
   .bg{fill:none}
@@ -31,7 +31,7 @@
 </defs>
 <text class="t h" x="480" y="34" text-anchor="middle">One repository, two components, one installer</text>
 <rect class="box" x="20" y="70" width="260" height="250" rx="10"/>
-<text class="t b" x="150" y="98" text-anchor="middle">Repository</text>
+<text class="t b" x="150" y="98" text-anchor="middle">plan-gate repository</text>
 <text class="t m" x="38" y="130" text-anchor="start">SKILL.md</text>
 <text class="t m" x="38" y="158" text-anchor="start">references/  (4 templates)</text>
 <text class="t m" x="38" y="186" text-anchor="start">dsh/preset/quick-dev.patch.yml</text>
@@ -49,7 +49,7 @@
 <text class="t b" x="745" y="86" text-anchor="middle">skill  →  any SKILL.md client (default: Qoder)</text>
 <text class="t m" x="568" y="110" text-anchor="start">~/.qoder-cn/skills/code-project-flow/</text>
 <text class="t m" x="582.4" y="130" text-anchor="start">or ~/.qoder/skills/…, or --skills-dir DIR</text>
-<text class="t m" x="568" y="150" text-anchor="start">SKILL.md  references/  LICENSE  .cpf-manifest</text>
+<text class="t m" x="568" y="150" text-anchor="start">SKILL.md  references/  LICENSE  .plan-gate-manifest</text>
 <text class="t m" x="568" y="170" text-anchor="start">documents in the project: docs/MAP.md …</text>
 <rect class="box" x="550" y="210" width="390" height="150" rx="10"/>
 <text class="t b" x="745" y="236" text-anchor="middle">dsh  →  DSH quick dev mode</text>
@@ -62,6 +62,6 @@
 <path class="ln" d="M518,180 C535,180 530,125 546,125" marker-end="url(#a)"/>
 <path class="ln" d="M518,215 C535,215 530,285 546,285" marker-end="url(#a)"/>
 <rect class="gate" x="20" y="385" width="920" height="60" rx="10"/>
-<text class="t s" x="480" y="410" text-anchor="middle">Upgrades: an install without .cpf-manifest (from the former installers) is never overwritten.</text>
-<text class="t s" x="480" y="430" text-anchor="middle">It is skipped (exit 3) or, with --migrate-legacy, moved to ~/.code-project-flow-backups/&lt;time&gt;/. Nothing is deleted.</text>
+<text class="t s" x="480" y="410" text-anchor="middle">Migration: an install by dsh-quick-dev or code-project-flow (no .plan-gate-manifest) is never overwritten.</text>
+<text class="t s" x="480" y="430" text-anchor="middle">It is skipped (exit 3) or, with --migrate-legacy, moved to ~/.plan-gate-backups/&lt;time&gt;/. Nothing is deleted.</text>
 </svg>

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="380" viewBox="0 0 960 380" role="img" aria-labelledby="title desc">
-<title id="title">code-project-flow: DSH plan-arm plugin</title>
+<title id="title">plan-gate: DSH plan-arm plugin</title>
 <desc id="desc">On session creation the plugin arms plan mode for root agents when AGENTS.md exists and TASK.md does not. Subagents are skipped. It re-arms after a round's TASK.md disappears.</desc>
 <style>
   .bg{fill:none}

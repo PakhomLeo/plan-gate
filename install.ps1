@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-    Install, update or uninstall code-project-flow.
+    Install, update or uninstall plan-gate. The skill it installs is named
+    code-project-flow (see README, "Skill name").
 
 .DESCRIPTION
     Same behaviour as install.sh. Components:
@@ -15,12 +16,12 @@
       - Never elevates and never writes outside the chosen skills folder, the
         DSH home and (only with -MigrateLegacy) the backup folder.
       - Only overwrites or removes files it installed itself: those listed in
-        the .cpf-manifest file in each skill folder, a plugin file whose
+        the .plan-gate-manifest file in each skill folder, a plugin file whose
         content matches a shipped version, and the one preset block it inserts.
       - An install made by the former code-project-flow or dsh-quick-dev
         installers has no manifest. It is left alone unless you pass
         -MigrateLegacy or answer "y" at the prompt; then it is moved into
-        ~\.code-project-flow-backups\<timestamp>\, never deleted.
+        ~\.plan-gate-backups\<timestamp>\, never deleted.
 
     Messages are English and this file is ASCII on purpose: without a BOM,
     Windows PowerShell 5.1 decodes a script as ANSI and would mangle anything else.
@@ -54,18 +55,18 @@ param(
     [switch]$DryRun
 )
 
-function Invoke-CpfInstall {
+function Invoke-PlanGateInstall {
     param([string]$Components, [string]$SkillsDir, [string]$DshHome,
           [bool]$Uninstall, [bool]$MigrateLegacy, [bool]$DryRun, [string]$ScriptRoot)
 
     $ErrorActionPreference = 'Stop'
-    $RepoUrl = if ($env:CPF_REPO_URL) { $env:CPF_REPO_URL } else { 'https://github.com/PakhomLeo/code-project-flow.git' }
-    $RepoRef = $env:CPF_REF
+    $RepoUrl = if ($env:PLAN_GATE_REPO_URL) { $env:PLAN_GATE_REPO_URL } else { 'https://github.com/PakhomLeo/plan-gate.git' }
+    $RepoRef = $env:PLAN_GATE_REF
     $SkillName = 'code-project-flow'
     $PluginFile = 'quick-dev-plan-arm.mjs'
     $Placeholder = '__QUICK_DEV_PLUGIN_URL__'
     $PresetId = 'preset-quick-dev'
-    $Manifest = '.cpf-manifest'
+    $Manifest = '.plan-gate-manifest'
     # sha256 of every plugin version ever shipped (LF line endings).
     $KnownPluginSha256 = @('414735eda972288f2f7d58a8cf9986290f1697f1578d8ad1e8699c317f337826')
     $SkillFiles = @('SKILL.md', 'references/AGENTS.md', 'references/HARNESS.md', 'references/MAP.md', 'references/TASK.md', 'LICENSE')
@@ -92,7 +93,7 @@ function Invoke-CpfInstall {
     }
     elseif (-not $Uninstall) {
         if (-not (Get-Command git -ErrorAction SilentlyContinue)) { throw 'git is required but was not found on PATH.' }
-        $temporary = Join-Path ([System.IO.Path]::GetTempPath()) ('cpf-' + [guid]::NewGuid().ToString('N'))
+        $temporary = Join-Path ([System.IO.Path]::GetTempPath()) ('plan-gate-' + [guid]::NewGuid().ToString('N'))
         Say "Fetching $RepoUrl"
         if ($RepoRef) { git clone --quiet --depth 1 --branch $RepoRef $RepoUrl $temporary }
         else { git clone --quiet --depth 1 $RepoUrl $temporary }
@@ -112,7 +113,7 @@ function Invoke-CpfInstall {
         $qoderCn = Join-Path $HOME '.qoder-cn/skills'
         $qoderGlobal = Join-Path $HOME '.qoder/skills'
         $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-        $backupRoot = Join-Path $HOME ".code-project-flow-backups/$stamp"
+        $backupRoot = Join-Path $HOME ".plan-gate-backups/$stamp"
 
         if ($SkillsDir) { $skillsRoot = $SkillsDir }
         else {
@@ -155,6 +156,47 @@ function Invoke-CpfInstall {
             return 'foreign'
         }
 
+        # What the two former installers wrote (checked against their source):
+        #   code-project-flow (2026-09-28..10-03): `git clone --depth 1` of the
+        #     whole repository into <skills>\code-project-flow (<skills> was
+        #     -SkillsRoot, ~\.qoder\skills or ~\.qoder-cn\skills). Marker:
+        #     .git\config with origin github.com/PakhomLeo/code-project-flow.
+        #   dsh-quick-dev (2026-09-29..10-21): $DSH_HOME\skills\code-project-flow\
+        #     (SKILL.md + references\, no LICENSE, no marker file), the plugin
+        #     (see $KnownPluginSha256), one preset-quick-dev block per profile
+        #     layer and, only after an interrupted run, cordis.patch.yml.dsh-quick-dev.tmp.
+        $LegacyCheckoutFiles = @('.gitattributes', '.gitignore', 'LICENSE', 'README.en.md', 'README.md', 'SKILL.md', 'install.ps1', 'install.sh', 'references/AGENTS.md', 'references/HARNESS.md', 'references/MAP.md', 'references/TASK.md')
+        $LegacyCopyFiles = @('SKILL.md', 'references/AGENTS.md', 'references/HARNESS.md', 'references/MAP.md', 'references/TASK.md')
+        $LegacyTmpSuffix = '.dsh-quick-dev.tmp'
+
+        function Get-LegacyKind([string]$Dir) {
+            $config = Join-Path $Dir '.git/config'
+            if ((Test-Path -LiteralPath $config -PathType Leaf) -and (Select-String -LiteralPath $config -Pattern 'github\.com[:/]PakhomLeo/code-project-flow(\.git)?\s*$' -Quiet)) {
+                return 'code-project-flow git checkout'
+            }
+            if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { return 'git checkout of unknown origin' }
+            if ($Dir.StartsWith((Join-Path $dshRoot 'skills') + [System.IO.Path]::DirectorySeparatorChar)) { return 'dsh-quick-dev copy' }
+            return 'manual copy'
+        }
+
+        function Get-LegacyExtras([string]$Dir) {
+            $known = if ((Get-LegacyKind $Dir) -eq 'code-project-flow git checkout') { $LegacyCheckoutFiles } else { $LegacyCopyFiles }
+            $full = (Resolve-Path -LiteralPath $Dir).Path.TrimEnd('\', '/')
+            $files = @(Get-ChildItem -LiteralPath $full -Recurse -File -Force | ForEach-Object {
+                $_.FullName.Substring($full.Length + 1).Replace('\', '/')
+            } | Where-Object { -not ($_ -eq '.git' -or $_.StartsWith('.git/')) } | Sort-Object -CaseSensitive)
+            return @($files | Where-Object { $known -notcontains $_ })
+        }
+
+        function Show-Legacy([string]$Dir) {
+            Say "Found a $(Get-LegacyKind $Dir) made by a former installer: $Dir"
+            $extras = @(Get-LegacyExtras $Dir)
+            if ($extras.Count -gt 0) {
+                Say '  Files the former installer did not write (they stay in the folder or its backup):'
+                foreach ($e in $extras) { Write-Host "      $e" }
+            }
+        }
+
         function Get-Label([string]$Path) { return (($Path -replace '^[A-Za-z]:', '') -replace '^[\\/]+', '' -replace '[\\/: ]', '_') }
 
         function Move-ToBackup([string]$Path) {
@@ -194,6 +236,7 @@ function Invoke-CpfInstall {
                 $script:skipped = $true; return $false
             }
             if ($state -eq 'legacy') {
+                Show-Legacy $Dir
                 if (Confirm-Legacy $Dir) { Move-ToBackup $Dir; $state = 'absent' }
                 else {
                     Warn "Legacy install left untouched: $Dir. Re-run with -MigrateLegacy to move it to a backup folder and install."
@@ -218,7 +261,7 @@ function Invoke-CpfInstall {
                 }
             }
             if (-not $DryRun) {
-                $lines = @("# code-project-flow $version layout=$Layout. Files below were written by install.sh/install.ps1.") + $SkillFiles
+                $lines = @("# plan-gate $version skill=code-project-flow layout=$Layout. Files below were written by install.sh/install.ps1.") + $SkillFiles
                 [System.IO.File]::WriteAllText((Join-Path $Dir $Manifest), (($lines -join "`n") + "`n"), $Utf8)
             }
             Say "Installed skill ($Layout layout) $Dir"
@@ -230,6 +273,7 @@ function Invoke-CpfInstall {
                 'absent' { Say "Nothing at $Dir" }
                 'foreign' { Warn "$Dir is not a code-project-flow install; left untouched." }
                 'legacy' {
+                    Show-Legacy $Dir
                     if (Confirm-Legacy $Dir) { Move-ToBackup $Dir }
                     else { Warn "Legacy install left untouched: $Dir. Re-run with -MigrateLegacy to move it to a backup folder."; $script:skipped = $true }
                 }
@@ -344,6 +388,14 @@ function Invoke-CpfInstall {
             $skill = Join-Path $dshRoot "skills/$SkillName"
             $pluginUrl = (New-Object System.Uri ([System.IO.Path]::GetFullPath($plugin))).AbsoluteUri
 
+            # Leftovers of an interrupted dsh-quick-dev run: moved aside only on request.
+            foreach ($d in @(Get-ChildItem -LiteralPath $profilesDir -Directory)) {
+                $tmp = Join-Path $d.FullName ('cordis.patch.yml' + $LegacyTmpSuffix)
+                if (-not (Test-Path -LiteralPath $tmp -PathType Leaf)) { continue }
+                if ($MigrateLegacy) { Move-ToBackup $tmp }
+                else { Say "Note: leftover of an interrupted dsh-quick-dev run: $tmp (not changed; -MigrateLegacy moves it to the backup folder)." }
+            }
+
             if ($Uninstall) {
                 foreach ($patch in $patches) {
                     if (Select-String -LiteralPath $patch -SimpleMatch "- id: $PresetId" -Quiet) {
@@ -380,9 +432,10 @@ function Invoke-CpfInstall {
             $blockText = [System.IO.File]::ReadAllText((Join-Path $sourceRoot 'dsh/preset/quick-dev.patch.yml'))
             $blockLines = @($blockText.Replace($Placeholder, $pluginUrl).TrimEnd("`r", "`n") -split "`r?`n")
             foreach ($patch in $patches) {
+                $verb = if (Select-String -LiteralPath $patch -SimpleMatch "- id: $PresetId" -Quiet) { 'Replaced the existing' } else { 'Wrote the' }
                 Plan "write preset block into $patch"
                 if (-not $DryRun) { Write-Block $patch $blockLines }
-                Say "Wrote preset 'quick-dev' into $patch"
+                Say "$verb preset 'quick-dev' block in $patch"
             }
             Say 'DSH: restart DSH, start a new blank session and pick the quick dev mode (second in the list).'
         }
@@ -407,7 +460,7 @@ function Invoke-CpfInstall {
         foreach ($root in @($qoderCn, $qoderGlobal, (Join-Path $dshRoot 'skills'))) {
             $dir = Join-Path $root $SkillName
             if (($handled -notcontains $dir) -and ((Get-SkillState $dir) -eq 'legacy')) {
-                Say "Note: an older install also exists at $dir (not changed). Use -Components/-SkillsDir to manage it."
+                Say "Note: a $(Get-LegacyKind $dir) also exists at $dir (not changed). Use -Components/-SkillsDir to manage it."
             }
         }
         if ($script:skipped) { Write-Warning 'Finished with skipped steps (see warnings above).'; return 3 }
@@ -420,7 +473,7 @@ function Invoke-CpfInstall {
 }
 
 # Only the last pipeline value is the exit code; anything a helper leaks before it is ignored.
-$code = @(Invoke-CpfInstall -Components $Components -SkillsDir $SkillsDir -DshHome $DshHome `
+$code = @(Invoke-PlanGateInstall -Components $Components -SkillsDir $SkillsDir -DshHome $DshHome `
     -Uninstall:$Uninstall.IsPresent -MigrateLegacy:$MigrateLegacy.IsPresent -DryRun:$DryRun.IsPresent -ScriptRoot $PSScriptRoot)[-1]
 # Piped through Invoke-Expression there is no script file, and `exit` would
 # close the caller's PowerShell window, so only exit when run as a file.

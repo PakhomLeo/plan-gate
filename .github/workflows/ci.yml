@@ -27,10 +27,16 @@ jobs:
       - name: install.sh vs install.ps1 parity
         if: runner.os == 'Linux'
         run: bash tests/parity-test.sh
+      - name: install.ps1 migrates real former installs (pwsh)
+        if: runner.os == 'Linux'
+        run: pwsh -NoProfile -File tests/legacy-test.ps1
   windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: install.ps1 migrates real former installs (Windows PowerShell 5.1)
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tests\legacy-test.ps1
       - name: install.ps1 under Windows PowerShell 5.1
         shell: powershell
         run: |

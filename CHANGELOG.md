@@ -4,20 +4,21 @@ All notable changes are listed here. Versions follow [Semantic Versioning](https
 
 ## [1.0.0] - Unreleased
 
-First release of the merged project. Tag: `v1.0.0`. The date is filled in when the release is published.
+First release of **plan-gate** (https://github.com/PakhomLeo/plan-gate), the merged project. The installed skill keeps the name `code-project-flow`. Tag: `v1.0.0`. The date is filled in when the release is published.
 
 ### Added
 
 - One installer pair (`install.sh`, `install.ps1`) for two components: `skill` (any `SKILL.md` client, default Qoder) and `dsh` (DSH quick dev mode). Options: `--components`, `--skills-dir`, `--dsh-home`, `--uninstall`, `--migrate-legacy`, `--dry-run`.
-- `.cpf-manifest` in each installed skill folder, so updates and uninstall touch only files the installer wrote.
-- Upgrade path from the former installers: earlier installs are detected and left alone, or moved to `~/.code-project-flow-backups/<time>/` with `--migrate-legacy`. Nothing is deleted.
-- Release assets with checksums: `scripts/make-release.sh` builds `code-project-flow-vX.Y.Z.tar.gz`/`.zip`, `install.sh`, `install.ps1` and `SHA256SUMS`; `.github/workflows/release.yml` publishes them when a `v*` tag is pushed. The README's one-line install downloads, verifies, then runs.
-- `CPF_REF` / `CPF_REPO_URL` for the (undocumented, unverified) piped mode of the installers.
-- Tests: `tests/install-test.sh` (end-to-end, temp `HOME`), `tests/parity-test.sh` (`install.sh` vs `install.ps1`, byte-identical results) and `tests/release-test.sh` (release assets, checksum verification, tampered download).
+- `.plan-gate-manifest` in each installed skill folder, so updates and uninstall touch only files the installer wrote.
+- Migration from the former `dsh-quick-dev` and `code-project-flow` installers: their installs are recognised by location, origin and content (git checkout of `PakhomLeo/code-project-flow`, `dsh-quick-dev` skill copy, the shipped plugin, the `preset-quick-dev` block, a leftover `cordis.patch.yml.dsh-quick-dev.tmp`). They are left alone, or moved to `~/.plan-gate-backups/<time>/` with `--migrate-legacy`. Nothing is deleted.
+- Release assets with checksums: `scripts/make-release.sh` builds `plan-gate-vX.Y.Z.tar.gz`/`.zip`, `install.sh`, `install.ps1` and `SHA256SUMS`; `.github/workflows/release.yml` publishes them when a `v*` tag is pushed. The README's one-line install downloads, verifies, then runs.
+- `PLAN_GATE_REF` / `PLAN_GATE_REPO_URL` for the (undocumented, unverified) piped mode of the installers.
+- Tests: `tests/install-test.sh` (end-to-end, temp `HOME`), `tests/parity-test.sh` (`install.sh` vs `install.ps1`, byte-identical results) and `tests/release-test.sh` (release assets, checksum verification, tampered download). The migration cases run the former installers, unmodified and offline, from git bundles in `tests/fixtures/legacy/`.
 - English `README.md`, `README.zh-CN.md`, diagrams in `docs/assets/`, `CONTRIBUTING.md`, `SECURITY.md`, CI workflow.
 
 ### Changed
 
+- Project and repository name: plan-gate. The skill name, the DSH preset id, the plugin file name and the mode name are unchanged, so existing `AGENTS.md` lines and installs keep working.
 - One skill source (`SKILL.md`, `references/`, `docs/` layout). The DSH copy (project-root layout) is rendered at install time instead of kept as a second copy.
 - The DSH skill copy now carries the latest workflow text (plain-language replies in the ASD-STE100 style).
 - `SKILL.md` and the `AGENTS.md` template: "add no security checks" is now "add no extra security layer during development; never remove or bypass existing authentication, permission checks or input validation; validate external input as usual".
@@ -35,7 +36,7 @@ First release of the merged project. Tag: `v1.0.0`. The date is filled in when t
 
 ## History before 1.0.0
 
-- `code-project-flow` (2026-09-28 – 2026-10-03, 4 commits): the workflow skill for Qoder; MIT.
-- `dsh-quick-dev` (2026-09-29 – 2026-10-21, 3 commits): the DSH quick dev mode with a copy of the skill; MIT.
+- `PakhomLeo/code-project-flow` (2026-09-28 – 2026-10-03, 4 commits): the workflow skill for Qoder; MIT.
+- `PakhomLeo/dsh-quick-dev` (2026-09-29 – 2026-10-21, 3 commits): the DSH quick dev mode with a copy of the skill; MIT.
 
 Their commit history is not carried into this repository.

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="350" viewBox="0 0 960 350" role="img" aria-labelledby="title desc">
-<title id="title">code-project-flow: the four documents</title>
+<title id="title">plan-gate: the four documents</title>
 <desc id="desc">AGENTS.md holds the rules, MAP.md the design, HARNESS.md the registered regression loops, TASK.md the current round. Paths differ between the skill layout (docs/) and the DSH layout (project root).</desc>
 <style>
   .bg{fill:none}

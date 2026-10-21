@@ -20,7 +20,7 @@ bad() { fail=$((fail + 1)); printf '  FAIL %s\n' "$1"; }
 check() { if eval "$2"; then ok "$1"; else bad "$1"; fi; }
 
 V="v$(tr -d ' \r\n' < "$ROOT/VERSION")"
-NAME="code-project-flow-$V"
+NAME="plan-gate-$V"
 
 # A copy of the working tree (tracked + new, not ignored) as one tagged commit.
 mkdir "$WORK/repo"
@@ -48,7 +48,7 @@ if command -v shasum >/dev/null 2>&1; then
 fi
 tar xzf "$NAME.tar.gz"
 bash "./$NAME/install.sh" --components skill > "$WORK/inst.out" 2>&1
-check 'extracted installer runs without fetching anything' '! grep -q Fetching "$WORK/inst.out" && [ -f "$HOME/.qoder-cn/skills/code-project-flow/.cpf-manifest" ]'
+check 'extracted installer runs without fetching anything' '! grep -q Fetching "$WORK/inst.out" && [ -f "$HOME/.qoder-cn/skills/code-project-flow/.plan-gate-manifest" ]'
 check 'installers in the archive match the separate assets' 'cmp -s "$NAME/install.sh" "$WORK/dist/install.sh" && cmp -s "$NAME/install.ps1" "$WORK/dist/install.ps1"'
 
 echo '3. a tampered download is rejected'
@@ -67,7 +67,7 @@ if command -v "$PWSH" >/dev/null 2>&1; then
     Expand-Archive \$f -DestinationPath .
     & \"./$NAME/install.ps1\" -Components skill
   " > "$WORK/ps.out" 2>&1 && rc=0 || rc=$?
-  check 'Get-FileHash matches and install.ps1 runs' '[ "$rc" = 0 ] && [ -f "$WORK/home3/.qoder-cn/skills/code-project-flow/.cpf-manifest" ]'
+  check 'Get-FileHash matches and install.ps1 runs' '[ "$rc" = 0 ] && [ -f "$WORK/home3/.qoder-cn/skills/code-project-flow/.plan-gate-manifest" ]'
   printf 'x' >> "$NAME.zip"
   HOME="$WORK/home3" "$PWSH" -NoProfile -NonInteractive -Command "
     \$f = '$NAME.zip'

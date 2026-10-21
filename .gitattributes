@@ -4,3 +4,4 @@
 # preset block is compared line by line inside DSH patch layers.
 * text=auto eol=lf
 *.png binary
+*.bundle binary

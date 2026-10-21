@@ -12,6 +12,8 @@ set -eu
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INSTALL="$ROOT/install.sh"
+# shellcheck source=tests/legacy-fixtures.sh
+. "$ROOT/tests/legacy-fixtures.sh"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 pass=0; fail=0
@@ -62,17 +64,17 @@ fresh_home skill
 run
 S="$HOME/.qoder-cn/skills/code-project-flow"
 check 'installs into ~/.qoder-cn/skills by default' '[ -f "$S/SKILL.md" ] && [ -f "$S/references/TASK.md" ] && [ -f "$S/LICENSE" ]'
-check 'writes a manifest' '[ -f "$S/.cpf-manifest" ]'
+check 'writes a manifest' '[ -f "$S/.plan-gate-manifest" ]'
 check 'docs layout keeps docs/TASK.md' 'cmp -s "$S/SKILL.md" "$ROOT/SKILL.md"'
 sum1="$(tree_sum "$S")"; run
 check 're-run is idempotent' '[ "$sum1" = "$(tree_sum "$S")" ]'
 echo note > "$S/my-notes.md"
-printf 'references/OLD.md\n' >> "$S/.cpf-manifest"; echo old > "$S/references/OLD.md"
+printf 'references/OLD.md\n' >> "$S/.plan-gate-manifest"; echo old > "$S/references/OLD.md"
 run
 check 'update removes a stale file it shipped' '[ ! -e "$S/references/OLD.md" ]'
 check 'update keeps a user file' '[ -f "$S/my-notes.md" ]'
 run --uninstall
-check 'uninstall removes shipped files' '[ ! -e "$S/SKILL.md" ] && [ ! -e "$S/.cpf-manifest" ]'
+check 'uninstall removes shipped files' '[ ! -e "$S/SKILL.md" ] && [ ! -e "$S/.plan-gate-manifest" ]'
 check 'uninstall keeps the user file and its folder' '[ -f "$S/my-notes.md" ]'
 
 echo '2. skill component, --skills-dir and deprecated positional folder'
@@ -117,9 +119,9 @@ check 'update target follows the existing install (~/.qoder)' 'grep -q "$L" "$WO
 check 'without --migrate-legacy: exit 3' '[ "$rc" = 3 ]'
 check 'without --migrate-legacy: untouched' '[ "$before" = "$(tree_sum "$L")" ]'
 run --migrate-legacy
-B="$(find "$HOME/.code-project-flow-backups" -mindepth 2 -maxdepth 2 -type d | head -n 1)"
+B="$(find "$HOME/.plan-gate-backups" -mindepth 2 -maxdepth 2 -type d | head -n 1)"
 check 'with --migrate-legacy: old copy moved to backup, git history intact' '[ -d "$B/.git" ] && [ "$before" = "$(tree_sum "$B")" ]'
-check 'with --migrate-legacy: new install has a manifest' '[ -f "$L/.cpf-manifest" ] && [ ! -e "$L/.git" ]'
+check 'with --migrate-legacy: new install has a manifest' '[ -f "$L/.plan-gate-manifest" ] && [ ! -e "$L/.git" ]'
 
 echo '5. foreign folder and modified plugin'
 fresh_home foreign
@@ -132,7 +134,7 @@ run_rc --components dsh < /dev/null
 check 'modified plugin: exit 3 and kept' '[ "$rc" = 3 ] && grep -q edited "$HOME/.dsh/plugins/quick-dev-plan-arm.mjs"'
 check 'modified plugin: preset not written' '! grep -q preset-quick-dev "$HOME/.dsh/profiles/web/cordis.patch.yml"'
 run --components dsh --migrate-legacy
-check 'modified plugin: replaced after --migrate-legacy, old one in backup' 'cmp -s "$HOME/.dsh/plugins/quick-dev-plan-arm.mjs" "$ROOT/dsh/plugin/quick-dev-plan-arm.mjs" && grep -rq edited "$HOME/.code-project-flow-backups"'
+check 'modified plugin: replaced after --migrate-legacy, old one in backup' 'cmp -s "$HOME/.dsh/plugins/quick-dev-plan-arm.mjs" "$ROOT/dsh/plugin/quick-dev-plan-arm.mjs" && grep -rq edited "$HOME/.plan-gate-backups"'
 
 echo '6. dry run changes nothing'
 fresh_home dry
@@ -145,11 +147,54 @@ check 'prints planned writes' 'grep -q "\[dry-run\] write" "$WORK/out"'
 echo '7. piped install fetches the repository'
 if git -C "$ROOT" rev-parse --verify -q HEAD >/dev/null; then
   fresh_home pipe
-  CPF_REPO_URL="file://$ROOT" bash -s -- --components skill < "$INSTALL" > "$WORK/out" 2>&1
+  PLAN_GATE_REPO_URL="file://$ROOT" bash -s -- --components skill < "$INSTALL" > "$WORK/out" 2>&1
   check 'installs from a fresh clone' 'grep -q Fetching "$WORK/out" && [ -f "$HOME/.qoder-cn/skills/code-project-flow/SKILL.md" ]'
 else
   echo '  skip (no commit yet)'
 fi
+
+echo '8. upgrade a real install made by the former code-project-flow installer'
+fresh_home legacy-cpf
+legacy_code_project_flow "$WORK" "$HOME"
+L="$HOME/.qoder-cn/skills/code-project-flow"
+check 'fixture: the former installer cloned PakhomLeo/code-project-flow at f42f945' 'grep -q "url = https://github.com/PakhomLeo/code-project-flow.git" "$L/.git/config" && [ "$(git -C "$L" rev-parse HEAD)" = f42f9455da0ce90c571c7f25161544193e920ddb ] && [ -f "$L/install.sh" ] && [ -f "$L/README.en.md" ]'
+echo mine > "$L/my-notes.md"
+before="$(tree_sum "$L")"
+run_rc < /dev/null
+check 'recognised as a code-project-flow git checkout' 'grep -q "Found a code-project-flow git checkout made by a former installer: $L" "$WORK/out"'
+check 'lists only the file the former installer did not write' '[ "$(grep -c "^      " "$WORK/out")" = 1 ] && grep -q "^      my-notes.md" "$WORK/out"'
+check 'without --migrate-legacy: exit 3 and untouched' '[ "$rc" = 3 ] && [ "$before" = "$(tree_sum "$L")" ]'
+run --migrate-legacy
+B="$(find "$HOME/.plan-gate-backups" -mindepth 2 -maxdepth 2 -type d | head -n 1)"
+check 'with --migrate-legacy: whole checkout (.git, user file) is in the backup, unchanged' '[ "$before" = "$(tree_sum "$B")" ] && git -C "$B" rev-parse -q --verify HEAD >/dev/null'
+check 'with --migrate-legacy: new copy-based install in the same folder' '[ -f "$L/.plan-gate-manifest" ] && [ ! -e "$L/.git" ] && [ ! -e "$L/install.sh" ] && cmp -s "$L/SKILL.md" "$ROOT/SKILL.md"'
+run_rc < /dev/null
+check 'next run is a plain update (exit 0, no legacy notice)' '[ "$rc" = 0 ] && ! grep -q "former installer" "$WORK/out"'
+
+echo '9. upgrade a real install made by the former dsh-quick-dev installer'
+fresh_home legacy-dsh
+mkdir -p "$HOME/.dsh/profiles/desktop" "$HOME/.dsh/profiles/web"
+printf '[]\n' > "$HOME/.dsh/profiles/desktop/cordis.patch.yml"
+printf '# user layer\n- insert:\n    - id: my-row\n      name: my-plugin\n' > "$HOME/.dsh/profiles/web/cordis.patch.yml"
+rm -rf "$WORK/profiles-orig"; cp -R "$HOME/.dsh/profiles" "$WORK/profiles-orig"
+legacy_dsh_quick_dev "$WORK" "$HOME"
+D="$HOME/.dsh"
+check 'fixture: the former installer wrote skill, plugin and one block per layer' '[ -f "$D/skills/code-project-flow/SKILL.md" ] && [ ! -e "$D/skills/code-project-flow/LICENSE" ] && [ -f "$D/plugins/quick-dev-plan-arm.mjs" ] && [ "$(cat "$D"/profiles/*/cordis.patch.yml | grep -c "id: preset-quick-dev")" = 2 ]'
+# Simulated: what an interrupted former run leaves next to a layer.
+printf 'partial\n' > "$D/profiles/web/cordis.patch.yml.dsh-quick-dev.tmp"
+before="$(tree_sum "$D")"
+run_rc --components dsh < /dev/null
+check 'recognised as a dsh-quick-dev copy with no extra files' 'grep -q "Found a dsh-quick-dev copy made by a former installer: $D/skills/code-project-flow" "$WORK/out" && ! grep -q "^      " "$WORK/out"'
+check 'leftover .dsh-quick-dev.tmp is reported' 'grep -q "leftover of an interrupted dsh-quick-dev run" "$WORK/out"'
+check 'without --migrate-legacy: exit 3 and nothing changed' '[ "$rc" = 3 ] && [ "$before" = "$(tree_sum "$D")" ]'
+run --components dsh --migrate-legacy
+B="$(find "$HOME/.plan-gate-backups" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+check 'with --migrate-legacy: old skill copy and leftover moved to the backup' '[ -f "$(find "$B" -path "*code-project-flow/SKILL.md" | head -n 1)" ] && [ -n "$(find "$B" -name "*cordis.patch.yml.dsh-quick-dev.tmp")" ] && [ ! -e "$D/profiles/web/cordis.patch.yml.dsh-quick-dev.tmp" ]'
+check 'plugin recognised as a shipped version: replaced, not backed up' '[ -z "$(find "$B" -name quick-dev-plan-arm.mjs)" ] && cmp -s "$D/plugins/quick-dev-plan-arm.mjs" "$ROOT/dsh/plugin/quick-dev-plan-arm.mjs"'
+check 'preset block replaced in place: still one per layer' 'grep -q "Replaced the existing preset" "$WORK/out" && [ "$(cat "$D"/profiles/*/cordis.patch.yml | grep -c "id: preset-quick-dev")" = 2 ] && grep -q "对话里的同意不算批准" "$D/profiles/web/cordis.patch.yml"'
+check 'new skill copy has a manifest and the root layout' '[ -f "$D/skills/code-project-flow/.plan-gate-manifest" ] && ! grep -q "docs/TASK.md" "$D/skills/code-project-flow/SKILL.md"'
+run --components dsh --uninstall
+check 'uninstall: layers byte-identical to before the former install' 'diff -r "$WORK/profiles-orig" "$D/profiles" >/dev/null'
 
 echo
 echo "passed: $pass  failed: $fail"

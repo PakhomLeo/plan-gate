@@ -89,19 +89,19 @@ for x, (t, s, cls) in zip(ox, outs):
 b.append(text(460, oy + 25, "Write-backs are proposed with the before", "s", "end"))
 b.append(text(460, oy + 43, "and after sentence. Written only if you agree;", "s", "end"))
 b.append(text(460, oy + 61, "a \u201cno\u201d is final and never asked twice.", "s", "end"))
-svg("workflow-phases.svg", 960, 395, "code-project-flow: five phases",
+svg("workflow-phases.svg", 960, 395, "plan-gate: five phases",
     "Read, write the task brief, confirm, build, close out. The confirm step is the only gate; close-out proposes write-backs to HARNESS.md and MAP.md and deletes TASK.md.", b)
 
 # 2. components and install targets -----------------------------------------
 b = [text(480, 34, "One repository, two components, one installer", "h")]
-b += [box(20, 70, 260, 250), text(150, 98, "Repository", "b")]
+b += [box(20, 70, 260, 250), text(150, 98, "plan-gate repository", "b")]
 for i, l in enumerate(["SKILL.md", "references/  (4 templates)", "dsh/preset/quick-dev.patch.yml", "dsh/plugin/quick-dev-plan-arm.mjs", "install.sh  install.ps1", "VERSION  LICENSE"]):
     b.append(text(38, 130 + i * 28, l, "m", "start"))
 b += card(318, 140, 200, 110, "Installer", ["install.sh  /  install.ps1", "--components skill,dsh", "--dry-run  --uninstall", "--migrate-legacy"], "acc", mono=(0, 1, 2, 3))
 b.append(arrow(280, 195, 314, 195))
 # skill target
 b += [box(550, 60, 390, 130, "box"), text(745, 86, "skill  \u2192  any SKILL.md client (default: Qoder)", "b")]
-for i, l in enumerate(["~/.qoder-cn/skills/code-project-flow/", "  or ~/.qoder/skills/\u2026, or --skills-dir DIR", "SKILL.md  references/  LICENSE  .cpf-manifest", "documents in the project: docs/MAP.md \u2026"]):
+for i, l in enumerate(["~/.qoder-cn/skills/code-project-flow/", "  or ~/.qoder/skills/\u2026, or --skills-dir DIR", "SKILL.md  references/  LICENSE  .plan-gate-manifest", "documents in the project: docs/MAP.md \u2026"]):
     b.append(text(568, 110 + i * 20, l, "m", "start"))
 b += [box(550, 210, 390, 150, "box"), text(745, 236, "dsh  \u2192  DSH quick dev mode", "b")]
 for i, l in enumerate(["$DSH_HOME (default ~/.dsh)/", "  skills/code-project-flow/   root layout", "  plugins/quick-dev-plan-arm.mjs", "  profiles/*/cordis.patch.yml", "      + one preset-quick-dev block", "documents in the project root: MAP.md \u2026"]):
@@ -109,9 +109,9 @@ for i, l in enumerate(["$DSH_HOME (default ~/.dsh)/", "  skills/code-project-flo
 b.append(path("M518,180 C535,180 530,125 546,125"))
 b.append(path("M518,215 C535,215 530,285 546,285"))
 b += [box(20, 385, 920, 60, "gate"),
-      text(480, 410, "Upgrades: an install without .cpf-manifest (from the former installers) is never overwritten.", "s"),
-      text(480, 430, "It is skipped (exit 3) or, with --migrate-legacy, moved to ~/.code-project-flow-backups/<time>/. Nothing is deleted.", "s")]
-svg("install-components.svg", 960, 460, "code-project-flow: components and install targets",
+      text(480, 410, "Migration: an install by dsh-quick-dev or code-project-flow (no .plan-gate-manifest) is never overwritten.", "s"),
+      text(480, 430, "It is skipped (exit 3) or, with --migrate-legacy, moved to ~/.plan-gate-backups/<time>/. Nothing is deleted.", "s")]
+svg("install-components.svg", 960, 460, "plan-gate: components and install targets",
     "The installer copies the skill into a skills folder and, for DSH, also installs the plan-arm plugin and a preset block in every profile patch layer.", b)
 
 # 3. four documents ----------------------------------------------------------
@@ -133,7 +133,7 @@ b.append(path("M20,300 L 700,300"))
 b.append(text(360, 322, "a new session reads Docs 1, 2, 3 (DSH auto-loads them from the project root)"))
 b.append(text(842, 300, "deleted at close-out", "s"))
 b.append(text(842, 322, "its existence = round in progress", "s"))
-svg("four-documents.svg", 960, 350, "code-project-flow: the four documents",
+svg("four-documents.svg", 960, 350, "plan-gate: the four documents",
     "AGENTS.md holds the rules, MAP.md the design, HARNESS.md the registered regression loops, TASK.md the current round. Paths differ between the skill layout (docs/) and the DSH layout (project root).", b)
 
 # 4. DSH plan-arm plugin -----------------------------------------------------
@@ -152,6 +152,6 @@ b += [box(20, 280, 920, 84, "box"),
       text(480, 306, "Re-arm only after a round ends: the plugin saw TASK.md, it is now gone, AGENTS.md is still there, and plan mode is off.", "s"),
       text(480, 328, "It reads two file paths and flips plan mode on. It adds no tools, blocks no tool call, and errors only log a warning,", "s"),
       text(480, 348, "so a failure can never stop a session from opening. You still approve or refine every plan yourself.", "s")]
-svg("dsh-plan-arm.svg", 960, 380, "code-project-flow: DSH plan-arm plugin",
+svg("dsh-plan-arm.svg", 960, 380, "plan-gate: DSH plan-arm plugin",
     "On session creation the plugin arms plan mode for root agents when AGENTS.md exists and TASK.md does not. Subagents are skipped. It re-arms after a round's TASK.md disappears.", b)
 print("ok")

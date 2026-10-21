@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping. This project is small on purpose: one skill, four templates, one DSH preset and plugin, and one installer for two platforms. Changes that keep it that way are the easiest to accept.
+Thanks for helping. plan-gate is small on purpose: one skill, four templates, one DSH preset and plugin, and one installer for two platforms. Changes that keep it that way are the easiest to accept.
 
 ## Before you start
 
@@ -14,7 +14,7 @@ Thanks for helping. This project is small on purpose: one skill, four templates,
 | --- | --- | --- |
 | Workflow rules or templates | `SKILL.md`, `references/*.md` (always with `docs/` paths) | Both READMEs if behaviour changes |
 | DSH mode | `dsh/preset/quick-dev.patch.yml`, `dsh/plugin/quick-dev-plan-arm.mjs` | If the plugin content changes, add the **old** file's sha256 (LF line endings) to `KNOWN_PLUGIN_SHA256` in **both** installers, so upgrades recognise it |
-| Installer | `install.sh` **and** `install.ps1` | `tests/install-test.sh`, both READMEs |
+| Installer | `install.sh` **and** `install.ps1` | `tests/install-test.sh`, `tests/parity-test.sh`, both READMEs. Recognition of the former installers' files lives in `legacy_kind` / `Get-LegacyKind`; `tests/fixtures/legacy/*.bundle` are test data, do not edit them |
 | Files the installer ships | `SKILL_FILES` in both installers | The manifest logic handles removal of dropped files |
 | Diagrams | `scripts/make_diagrams.py`, then `python3 scripts/make_diagrams.py docs/assets` | Keep the shared style block |
 | Release | `VERSION`, `CHANGELOG.md` (replace `Unreleased` with the date) | Push tag `vX.Y.Z`; the release workflow builds the assets and `SHA256SUMS` with `scripts/make-release.sh`. Never edit `SHA256SUMS` by hand |
@@ -27,7 +27,7 @@ These are the project's promises to users. A pull request that breaks one will n
 
 1. No `sudo` or elevation.
 2. Overwrite or remove only what the installer wrote (manifest, known plugin hash, the one preset block).
-3. Never delete user files. Earlier installs move to `~/.code-project-flow-backups/<time>/` only with `--migrate-legacy` or an interactive "y".
+3. Never delete user files. Earlier installs move to `~/.plan-gate-backups/<time>/` only with `--migrate-legacy` or an interactive "y".
 4. A patch layer is byte-for-byte unchanged after install then uninstall, for LF and CRLF files.
 5. `install.sh` and `install.ps1` behave the same. `install.sh` stays bash 3.2 compatible (macOS). `install.ps1` stays ASCII and Windows PowerShell 5.1 compatible, and never calls `exit` when piped through `iex`.
 6. Console output is English.
@@ -40,12 +40,13 @@ Run these before opening a pull request:
 shellcheck install.sh scripts/*.sh tests/*.sh
 bash tests/install-test.sh
 bash tests/parity-test.sh        # PowerShell 7: https://aka.ms/powershell
+pwsh -NoProfile -File tests/legacy-test.ps1   # also runs under Windows PowerShell 5.1
 bash tests/release-test.sh
 ```
 
 Optional: `Invoke-ScriptAnalyzer -Path install.ps1` (PSScriptAnalyzer). `PSAvoidUsingWriteHost` is expected for a console installer.
 
-All tests use throwaway `HOME` folders and never touch your real configuration.
+All tests use throwaway `HOME` folders and never touch your real configuration or the network. The migration cases build real old installs by running the former installers from `tests/fixtures/legacy/*.bundle`.
 
 ## Commits and pull requests
 

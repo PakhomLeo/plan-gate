@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="395" viewBox="0 0 960 395" role="img" aria-labelledby="title desc">
-<title id="title">code-project-flow: five phases</title>
+<title id="title">plan-gate: five phases</title>
 <desc id="desc">Read, write the task brief, confirm, build, close out. The confirm step is the only gate; close-out proposes write-backs to HARNESS.md and MAP.md and deletes TASK.md.</desc>
 <style>
   .bg{fill:none}

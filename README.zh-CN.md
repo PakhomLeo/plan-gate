@@ -1,4 +1,4 @@
-# code-project-flow
+# plan-gate
 
 [English](README.md) | 简体中文
 
@@ -11,7 +11,9 @@
 | `skill` | Qoder，以及任何读取 `SKILL.md` 格式的助手客户端 | 施工流程 Skill：`SKILL.md` 加四份文档模板 |
 | `dsh` | [DSH（DeepSeek Harness）](https://github.com/deepseek-ai/deepseek-harness) | 与内置「标准模式」并列的「快速开发模式」：同一份 Skill、一个在该交计划时打开计划模式的小插件，以及模式声明 |
 
-> 本项目由 `dsh-quick-dev` 和 `code-project-flow` 两个旧仓库合并而来，见[历史](#历史)和[从旧仓库升级](#从旧仓库升级)。
+> 本项目由 `dsh-quick-dev` 和 `code-project-flow` 两个旧仓库合并而来，见[历史](#历史)和[从 dsh-quick-dev 或 code-project-flow 迁移](#从-dsh-quick-dev-或-code-project-flow-迁移)。
+>
+> **项目叫 plan-gate，安装出来的 Skill 仍叫 `code-project-flow`。** 见 [Skill 名称](#skill-名称)。
 
 ---
 
@@ -20,7 +22,8 @@
 - [为什么需要它](#为什么需要它)
 - [工作方式](#工作方式)
 - [安装](#安装)
-- [从旧仓库升级](#从旧仓库升级)
+- [Skill 名称](#skill-名称)
+- [从 dsh-quick-dev 或 code-project-flow 迁移](#从-dsh-quick-dev-或-code-project-flow-迁移)
 - [DSH 快速开发模式](#dsh-快速开发模式)
 - [安全与权限](#安全与权限)
 - [自定义](#自定义)
@@ -100,15 +103,15 @@
 ### 推荐：先克隆，再运行
 
 ```bash
-git clone https://github.com/PakhomLeo/code-project-flow.git
-cd code-project-flow
+git clone https://github.com/PakhomLeo/plan-gate.git
+cd plan-gate
 ./install.sh --dry-run      # 先看会改什么
 ./install.sh                # 安装自动检测到的组件
 ```
 
 ```powershell
-git clone https://github.com/PakhomLeo/code-project-flow.git
-cd code-project-flow
+git clone https://github.com/PakhomLeo/plan-gate.git
+cd plan-gate
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
@@ -146,7 +149,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 | 附件 | 内容 |
 | --- | --- |
-| `code-project-flow-vX.Y.Z.tar.gz`、`code-project-flow-vX.Y.Z.zip` | 该标签的源码树，含两个安装脚本 |
+| `plan-gate-vX.Y.Z.tar.gz`、`plan-gate-vX.Y.Z.zip` | 该标签的源码树，含两个安装脚本 |
 | `install.sh`、`install.ps1` | 同样的安装脚本，单独提供 |
 | `SHA256SUMS` | 上面四个文件的 sha256 |
 
@@ -155,22 +158,22 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 macOS / Linux（macOS 没装 coreutils 时，把 `sha256sum -c -` 换成 `shasum -a 256 -c -`）：
 
 ```bash
-V=v1.0.0; B=https://github.com/PakhomLeo/code-project-flow/releases/download/$V
-mkdir -p cpf-$V && cd cpf-$V \
-  && curl -fsSLO "$B/code-project-flow-$V.tar.gz" && curl -fsSLO "$B/SHA256SUMS" \
-  && grep " code-project-flow-$V.tar.gz\$" SHA256SUMS | sha256sum -c - \
-  && tar xzf "code-project-flow-$V.tar.gz" && bash "code-project-flow-$V/install.sh"
+V=v1.0.0; B=https://github.com/PakhomLeo/plan-gate/releases/download/$V
+mkdir -p plan-gate-dl && cd plan-gate-dl \
+  && curl -fsSLO "$B/plan-gate-$V.tar.gz" && curl -fsSLO "$B/SHA256SUMS" \
+  && grep " plan-gate-$V.tar.gz\$" SHA256SUMS | sha256sum -c - \
+  && tar xzf "plan-gate-$V.tar.gz" && bash "plan-gate-$V/install.sh"
 ```
 
 Windows（PowerShell）：
 
 ```powershell
-$V = 'v1.0.0'; $B = "https://github.com/PakhomLeo/code-project-flow/releases/download/$V"; $f = "code-project-flow-$V.zip"
+$V = 'v1.0.0'; $B = "https://github.com/PakhomLeo/plan-gate/releases/download/$V"; $f = "plan-gate-$V.zip"
 Invoke-WebRequest "$B/$f" -OutFile $f; Invoke-WebRequest "$B/SHA256SUMS" -OutFile SHA256SUMS
 $want = (((Get-Content SHA256SUMS) -match "  $([regex]::Escape($f))$") -split '\s+')[0]
 if ((Get-FileHash $f -Algorithm SHA256).Hash -ne $want) { throw 'SHA256 mismatch: do not run it' }
 Expand-Archive $f -DestinationPath .
-powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
+powershell -ExecutionPolicy Bypass -File ".\plan-gate-$V\install.ps1"
 ```
 
 安装参数加在最后一行末尾，比如 `--components dsh` 或 `-Components dsh`。校验已经下载好的文件：Linux 用 `sha256sum -c --ignore-missing SHA256SUMS`，较新的 macOS 用 `shasum -a 256 -c --ignore-missing SHA256SUMS`，Windows 用 `Get-FileHash 文件 -Algorithm SHA256`，再和 `SHA256SUMS` 里那一行对照。
@@ -188,7 +191,7 @@ powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
 
 ### 更新和卸载
 
-更新：拉取仓库后重新运行安装脚本。它只改写 `.cpf-manifest` 里列出的文件，并删掉旧版本装过、新版本不再提供的文件。
+更新：拉取仓库后重新运行安装脚本。它只改写 `.plan-gate-manifest` 里列出的文件，并删掉旧版本装过、新版本不再提供的文件。
 
 ```bash
 ./install.sh --uninstall                  # 或：--components dsh --uninstall
@@ -202,19 +205,67 @@ powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
 
 ---
 
-## 从旧仓库升级
+## Skill 名称
 
-| 你之前用的 | 新脚本会看到 | 怎么做 |
+仓库和项目叫 **plan-gate**。它安装的 Skill 沿用旧名 **`code-project-flow`**：目录是 `skills/code-project-flow/`，`SKILL.md` 里写的是 `name: code-project-flow`。原因：
+
+- 上面那行 Qoder 默认设置写的是 `默认使用 skill code-project-flow`。使用者已经把它写进了自己的 `AGENTS.md`，安装脚本从不改这个文件。改名会让这一行悄悄失效。
+- 已有的安装在 `skills/code-project-flow/` 里。名字不变，升级就是原地替换旧 Skill，助手不会同时看到两份相同的流程。
+- 触发词和 DSH 模式的引导都用这个名字指代 Skill。
+
+同样的原因，DSH 预设 id（`preset-quick-dev`）、插件文件名（`quick-dev-plan-arm.mjs`）和模式名称都不变。只改了从未离开安装脚本的名字：清单文件是 `.plan-gate-manifest`，备份放在 `~/.plan-gate-backups/`，管道模式的变量是 `PLAN_GATE_REF` 和 `PLAN_GATE_REPO_URL`。
+
+---
+
+## 从 dsh-quick-dev 或 code-project-flow 迁移
+
+安装脚本能识别两个旧安装脚本写下的东西，只在它们写过的位置找。这些已对照旧脚本源码核实。测试会原样运行旧安装脚本，得到真实的旧安装，再做迁移（见[开发与测试](#开发与测试)）。
+
+### 能识别什么
+
+| 旧安装脚本 | 它写了什么 | 新脚本怎么识别 |
 | --- | --- | --- |
-| `code-project-flow` 的 `install.sh`/`install.ps1`（在 `~/.qoder-cn/skills/code-project-flow` 或 `~/.qoder/skills/code-project-flow` 里 `git clone`） | 一个没有 `.cpf-manifest` 的 Skill 目录 | 运行一次 `./install.sh --migrate-legacy`。旧的克隆（连同 `.git`）移到 `~/.code-project-flow-backups/<时间>/` |
-| `dsh-quick-dev` 的 `install.sh`/`install.ps1` | `$DSH_HOME/skills/` 下没有清单的 Skill 副本、同一个插件文件、同一段预设 | 运行一次 `./install.sh --components dsh --migrate-legacy`。插件和预设会被识别并原地替换 |
-| 手动复制的 Skill 目录 | 没有清单的 Skill 目录 | 同第一行 |
+| `code-project-flow` 的 `install.sh` / `install.ps1` | 把 `github.com/PakhomLeo/code-project-flow` 用 `git clone --depth 1` 克隆到 `<skills>/code-project-flow`。`<skills>` 是第一个参数（`-SkillsRoot`），否则是 `~/.qoder-cn/skills` 或 `~/.qoder/skills`。更新时运行 `git pull --ff-only`。 | Skill 目录（`SKILL.md` 里有 `name: code-project-flow`）没有 `.plan-gate-manifest`，且 `.git/config` 的 origin 是上述地址。报告为 *code-project-flow git checkout*。 |
+| `dsh-quick-dev` 的 `install.sh` / `install.ps1` | `$DSH_HOME/skills/code-project-flow/`（`SKILL.md` 和 `references/`，没有标记文件）；`$DSH_HOME/plugins/quick-dev-plan-arm.mjs`；每个 `profiles/*/cordis.patch.yml` 里一段 `id: preset-quick-dev` 的 `- insert:`。运行中断时可能留下 `cordis.patch.yml.dsh-quick-dev.tmp`。 | `$DSH_HOME/skills/` 下没有清单的 Skill 目录（*dsh-quick-dev copy*）。插件看 sha256：plan-gate 带的是同一个文件。预设看 id。残留文件看文件名。 |
+| 手动复制，或其他来源的 git 克隆 | 没有清单的 Skill 目录 | 报告为 *manual copy* 或 *git checkout of unknown origin*。 |
 
-不加 `--migrate-legacy`（交互运行时也不回答 y），旧安装一律不动，脚本以退出码 `3` 结束。任何东西都不会被删除：备份目录不再需要时请自己删。看到本次不处理的位置上也有旧安装时，脚本会打印提示。
+`$DSH_HOME` 默认仍是 `~/.dsh`。对每个旧 Skill 目录，脚本还会列出旧脚本没写过的文件（比如你的笔记）。这些文件不会被删：要么留在原目录，要么随目录一起进备份。
+
+### 会做什么
+
+| 对象 | 不加 `--migrate-legacy` | 加 `--migrate-legacy`（或在提示时回答 y） |
+| --- | --- | --- |
+| 旧 Skill 目录 | 不动。给出警告，退出码 `3`。对 `dsh` 而言，插件和预设此时也不动。 | 整个目录（含 `.git` 和你的文件）移到 `~/.plan-gate-backups/<时间>/`，再在原位置装一份带清单的新副本。 |
+| 内容与发布版本一致的插件 | 原地替换（是同一个文件）。 | 同左。 |
+| 你改过的插件 | 保留。给出警告，退出码 `3`。 | 移到备份，再替换。 |
+| `preset-quick-dev` 预设段 | 原地替换：每层一段，层里其他内容不变。 | 同左。 |
+| `cordis.patch.yml.dsh-quick-dev.tmp` | 只报告。 | 移到备份。 |
+
+任何东西都不会被删除。备份目录不再需要时请自己删。看到本次不处理的位置上也有旧安装时，脚本会打印提示。
+
+### 命令
+
+```bash
+git clone https://github.com/PakhomLeo/plan-gate.git && cd plan-gate
+./install.sh --dry-run                          # 找到了什么、会改什么
+./install.sh --migrate-legacy                   # 按自动检测迁移 skill 和 dsh
+./install.sh --components dsh --migrate-legacy  # 只迁移 dsh-quick-dev
+./install.sh --components skill --skills-dir /path/to/skills --migrate-legacy  # 旧脚本用过第一个参数时
+```
+
+```powershell
+git clone https://github.com/PakhomLeo/plan-gate.git; cd plan-gate
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -MigrateLegacy
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Components dsh -MigrateLegacy
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Components skill -SkillsDir C:\path\to\skills -MigrateLegacy
+```
+
+迁移之后，`./install.sh --uninstall` 会卸掉新安装，每个 patch 层逐字节回到 `dsh-quick-dev` 改动之前的样子。
 
 对已有使用者的变化：
 
-- Skill 现在是**复制**安装，不再是 `git clone`。在 skills 目录里 `git pull` 不再是更新方式，请重新运行安装脚本。
+- Skill 现在是**复制**安装，不再是 `git clone`。在 skills 目录里 `git pull` 不再是更新方式，请拉取本仓库后重新运行安装脚本。
 - `dsh` 的 Skill 副本改用最新的流程文本（按 ASD-STE100 风格用简化技术语言回复），`dsh-quick-dev` 的模式引导里原本就已经这样要求。
 - `./install.sh /path/to/skills` 这种位置参数仍可用，但会提示已弃用，请改用 `--skills-dir`。
 
@@ -253,8 +304,8 @@ powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
 **安装脚本**（`install.sh`、`install.ps1`）：
 
 - 从不使用 `sudo` 或提权。只写选定的 skills 目录、DSH 主目录，以及（仅在 `--migrate-legacy` 时）备份目录。
-- 只覆盖或删除自己装的东西：`.cpf-manifest` 里列出的文件、哈希与发布版本一致的插件、那一段预设。其他一律报告并跳过。
-- 推荐的安装方式是先克隆再运行。Release 一行命令会先用 Release 的 `SHA256SUMS` 校验压缩包，再运行。把 `install.sh` 从网络直接管道给 `bash` 仍然可用（它会再去克隆仓库，`CPF_REF` 可固定标签），但没有任何校验，所以不作为文档里的安装方式。
+- 只覆盖或删除自己装的东西：`.plan-gate-manifest` 里列出的文件、哈希与发布版本一致的插件、那一段预设。其他一律报告并跳过。
+- 推荐的安装方式是先克隆再运行。Release 一行命令会先用 Release 的 `SHA256SUMS` 校验压缩包，再运行。把 `install.sh` 从网络直接管道给 `bash` 仍然可用（它会再去克隆仓库，`PLAN_GATE_REF` 可固定标签），但没有任何校验，所以不作为文档里的安装方式。
 
 **助手得到什么：**
 
@@ -292,14 +343,17 @@ powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
 ├── tests/
 │   ├── install-test.sh          # 在临时 HOME 里端到端测试 install.sh
 │   ├── parity-test.sh           # install.sh 与 install.ps1 结果逐字节一致
-│   └── release-test.sh          # Release 附件、SHA256SUMS、先下载再校验后执行
+│   ├── release-test.sh          # Release 附件、SHA256SUMS、先下载再校验后执行
+│   ├── legacy-test.ps1          # 从真实旧安装迁移，PowerShell 一侧
+│   ├── legacy-fixtures.sh       # 运行旧安装脚本，得到真实的旧安装
+│   └── fixtures/legacy/         # 两个旧仓库的 git bundle（测试数据）
 ├── scripts/                     # make-release.sh（附件和 SHA256SUMS）、配图生成、PNG 导出
 ├── docs/assets/                 # SVG 配图（适配深浅色）
 ├── VERSION  CHANGELOG.md  LICENSE  CONTRIBUTING.md  SECURITY.md
 └── README.md  README.zh-CN.md
 ```
 
-把本仓库直接克隆进 skills 目录（旧的手动安装方式）时，`SKILL.md` 和 `references/` 仍在根目录，所以依然可用。受支持的方式是安装脚本。
+`SKILL.md` 和 `references/` 仍在仓库根目录，所以用 Skill 的名字克隆进 skills 目录（`git clone https://github.com/PakhomLeo/plan-gate.git code-project-flow`）依然可用。受支持的方式是安装脚本。
 
 ---
 
@@ -309,18 +363,19 @@ powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
 shellcheck install.sh scripts/*.sh tests/*.sh
 bash tests/install-test.sh                 # install.sh，所有用例都在临时 HOME 里跑
 bash tests/parity-test.sh                  # 需要 PowerShell 7（pwsh）
+pwsh -NoProfile -File tests/legacy-test.ps1  # install.ps1 对旧安装脚本 install.ps1 的真实安装
 bash tests/release-test.sh                 # Release 附件、SHA256SUMS、先下载再校验后执行
 ```
 
 发布：推送与 `VERSION` 一致的标签 `vX.Y.Z`，[`.github/workflows/release.yml`](.github/workflows/release.yml) 会跑测试、用 `scripts/make-release.sh` 生成附件并发布。
 
-测试不会碰你真实的主目录。见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+测试不会碰你真实的主目录，也不联网。迁移用例从 `tests/fixtures/legacy/` 里两个旧仓库的 git bundle 原样运行旧安装脚本。见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ---
 
 ## 历史
 
-1.0.0 版合并了同一作者的两个仓库：
+plan-gate 1.0.0 版合并了同一作者的两个仓库：
 
 - **code-project-flow**（2026-09-28 – 2026-10-03）：给 Qoder 用的施工流程 Skill，文档放在 `docs/`，用 `git clone` 安装。
 - **dsh-quick-dev**（2026-09-29 – 2026-10-21）：DSH 快速开发模式，含一份项目根布局的 Skill 副本、计划武装插件和预设。

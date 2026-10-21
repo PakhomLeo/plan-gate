@@ -1,7 +1,7 @@
 name: release
 
-# Push a tag vX.Y.Z (matching VERSION) to publish a release whose assets are
-# the source archives, the two installers and SHA256SUMS.
+# Push a tag vX.Y.Z (matching VERSION) to publish a plan-gate release whose
+# assets are the source archives (plan-gate-vX.Y.Z.tar.gz / .zip), the two installers and SHA256SUMS.
 on:
   push:
     tags: ['v*']
@@ -21,6 +21,8 @@ jobs:
           shellcheck install.sh scripts/*.sh tests/*.sh
           bash tests/install-test.sh
           bash tests/release-test.sh
+          bash tests/parity-test.sh
+          pwsh -NoProfile -File tests/legacy-test.ps1
       - name: build assets
         run: bash scripts/make-release.sh "$GITHUB_REF_NAME" dist
       - name: verify checksums
@@ -28,4 +30,4 @@ jobs:
       - name: publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md. Verify downloads against SHA256SUMS."
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "plan-gate $GITHUB_REF_NAME" --notes "See CHANGELOG.md. Verify downloads against SHA256SUMS."

@@ -1,4 +1,4 @@
-# code-project-flow
+# plan-gate
 
 English | [简体中文](README.zh-CN.md)
 
@@ -11,7 +11,9 @@ The project ships two components from one repository and one installer:
 | `skill` | Qoder, and any agent client that reads the `SKILL.md` format | The workflow skill: `SKILL.md` plus four document templates |
 | `dsh` | [DSH (DeepSeek Harness)](https://github.com/deepseek-ai/deepseek-harness) | A "quick dev" agent mode next to the built-in standard mode: the same skill, a small plugin that opens plan mode when a plan is due, and the mode declaration |
 
-> This project merges two earlier repositories, `dsh-quick-dev` and `code-project-flow`. See [History](#history) and [Upgrading from the earlier repositories](#upgrading-from-the-earlier-repositories).
+> This project merges two earlier repositories, `dsh-quick-dev` and `code-project-flow`. See [History](#history) and [Migrating from dsh-quick-dev or code-project-flow](#migrating-from-dsh-quick-dev-or-code-project-flow).
+>
+> **The project is called plan-gate; the skill it installs is still called `code-project-flow`.** See [Skill name](#skill-name).
 
 ---
 
@@ -20,7 +22,8 @@ The project ships two components from one repository and one installer:
 - [Why](#why)
 - [How it works](#how-it-works)
 - [Install](#install)
-- [Upgrading from the earlier repositories](#upgrading-from-the-earlier-repositories)
+- [Skill name](#skill-name)
+- [Migrating from dsh-quick-dev or code-project-flow](#migrating-from-dsh-quick-dev-or-code-project-flow)
 - [The DSH quick dev mode](#the-dsh-quick-dev-mode)
 - [Security and permissions](#security-and-permissions)
 - [Customising](#customising)
@@ -100,15 +103,15 @@ Requirements: `bash` (macOS, Linux, WSL, Git Bash) or PowerShell 5.1+ on Windows
 ### Recommended: clone, then run
 
 ```bash
-git clone https://github.com/PakhomLeo/code-project-flow.git
-cd code-project-flow
+git clone https://github.com/PakhomLeo/plan-gate.git
+cd plan-gate
 ./install.sh --dry-run      # see what would change
 ./install.sh                # install the auto-detected components
 ```
 
 ```powershell
-git clone https://github.com/PakhomLeo/code-project-flow.git
-cd code-project-flow
+git clone https://github.com/PakhomLeo/plan-gate.git
+cd plan-gate
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
@@ -146,7 +149,7 @@ Every release has these assets, built by [`.github/workflows/release.yml`](.gith
 
 | Asset | What |
 | --- | --- |
-| `code-project-flow-vX.Y.Z.tar.gz`, `code-project-flow-vX.Y.Z.zip` | The tagged source tree, including both installers |
+| `plan-gate-vX.Y.Z.tar.gz`, `plan-gate-vX.Y.Z.zip` | The tagged source tree, including both installers |
 | `install.sh`, `install.ps1` | The same installers as separate files |
 | `SHA256SUMS` | sha256 of the four files above |
 
@@ -155,22 +158,22 @@ Every release has these assets, built by [`.github/workflows/release.yml`](.gith
 macOS / Linux (use `shasum -a 256 -c -` instead of `sha256sum -c -` on macOS without coreutils):
 
 ```bash
-V=v1.0.0; B=https://github.com/PakhomLeo/code-project-flow/releases/download/$V
-mkdir -p cpf-$V && cd cpf-$V \
-  && curl -fsSLO "$B/code-project-flow-$V.tar.gz" && curl -fsSLO "$B/SHA256SUMS" \
-  && grep " code-project-flow-$V.tar.gz\$" SHA256SUMS | sha256sum -c - \
-  && tar xzf "code-project-flow-$V.tar.gz" && bash "code-project-flow-$V/install.sh"
+V=v1.0.0; B=https://github.com/PakhomLeo/plan-gate/releases/download/$V
+mkdir -p plan-gate-dl && cd plan-gate-dl \
+  && curl -fsSLO "$B/plan-gate-$V.tar.gz" && curl -fsSLO "$B/SHA256SUMS" \
+  && grep " plan-gate-$V.tar.gz\$" SHA256SUMS | sha256sum -c - \
+  && tar xzf "plan-gate-$V.tar.gz" && bash "plan-gate-$V/install.sh"
 ```
 
 Windows (PowerShell):
 
 ```powershell
-$V = 'v1.0.0'; $B = "https://github.com/PakhomLeo/code-project-flow/releases/download/$V"; $f = "code-project-flow-$V.zip"
+$V = 'v1.0.0'; $B = "https://github.com/PakhomLeo/plan-gate/releases/download/$V"; $f = "plan-gate-$V.zip"
 Invoke-WebRequest "$B/$f" -OutFile $f; Invoke-WebRequest "$B/SHA256SUMS" -OutFile SHA256SUMS
 $want = (((Get-Content SHA256SUMS) -match "  $([regex]::Escape($f))$") -split '\s+')[0]
 if ((Get-FileHash $f -Algorithm SHA256).Hash -ne $want) { throw 'SHA256 mismatch: do not run it' }
 Expand-Archive $f -DestinationPath .
-powershell -ExecutionPolicy Bypass -File ".\code-project-flow-$V\install.ps1"
+powershell -ExecutionPolicy Bypass -File ".\plan-gate-$V\install.ps1"
 ```
 
 Add installer options at the end of the last line, for example `--components dsh` or `-Components dsh`. To check a file you already downloaded: `sha256sum -c --ignore-missing SHA256SUMS` (Linux), `shasum -a 256 -c --ignore-missing SHA256SUMS` (recent macOS), or `Get-FileHash FILE -Algorithm SHA256` and compare with the line in `SHA256SUMS` (Windows).
@@ -188,7 +191,7 @@ Without that line, the skill fires on words such as 开工 (start work), 收工 
 
 ### Update and uninstall
 
-Update: pull the checkout and run the installer again. It rewrites only the files listed in its `.cpf-manifest` and removes files that an earlier version shipped and this one does not.
+Update: pull the checkout and run the installer again. It rewrites only the files listed in its `.plan-gate-manifest` and removes files that an earlier version shipped and this one does not.
 
 ```bash
 ./install.sh --uninstall                  # or: --components dsh --uninstall
@@ -202,19 +205,67 @@ Uninstall removes the files in the manifest, the plugin if its content matches a
 
 ---
 
-## Upgrading from the earlier repositories
+## Skill name
 
-| You installed with | What the new installer finds | What to do |
+The repository and project are called **plan-gate**. The skill it installs keeps its old name, **`code-project-flow`**: the folder is `skills/code-project-flow/` and `SKILL.md` says `name: code-project-flow`. The reasons:
+
+- The Qoder default line above says `默认使用 skill code-project-flow`. Users have it in their `AGENTS.md`, and the installer never edits that file. A new name would silently turn that line off.
+- Existing installs live in `skills/code-project-flow/`. With the same name, an upgrade replaces the old skill in place, so the agent never sees two copies of the same workflow.
+- The trigger words and the DSH mode's guidance refer to the skill by this name.
+
+For the same reason, the DSH preset id (`preset-quick-dev`), the plugin file (`quick-dev-plan-arm.mjs`) and the mode name stay as they were. Only names that never left the installer changed: the manifest is `.plan-gate-manifest`, backups go to `~/.plan-gate-backups/`, and the piped-mode variables are `PLAN_GATE_REF` and `PLAN_GATE_REPO_URL`.
+
+---
+
+## Migrating from dsh-quick-dev or code-project-flow
+
+The installer recognises what the two former installers wrote, in the places they wrote it. This was checked against their source. The tests run the former installers, unmodified, to make real old installs and migrate them (see [Development and tests](#development-and-tests)).
+
+### What it recognises
+
+| Former installer | What it wrote | How the new installer recognises it |
 | --- | --- | --- |
-| `code-project-flow` `install.sh`/`install.ps1` (a `git clone` in `~/.qoder-cn/skills/code-project-flow` or `~/.qoder/skills/code-project-flow`) | A skill folder without `.cpf-manifest` | Run `./install.sh --migrate-legacy` once. The old checkout, including its `.git`, moves to `~/.code-project-flow-backups/<time>/` |
-| `dsh-quick-dev` `install.sh`/`install.ps1` | A skill copy without manifest in `$DSH_HOME/skills/`, the same plugin file, and the same preset block | Run `./install.sh --components dsh --migrate-legacy` once. The plugin and preset block are recognised and replaced in place |
-| Manual copy of the skill folder | A skill folder without manifest | Same as the first row |
+| `code-project-flow` `install.sh` / `install.ps1` | A `git clone --depth 1` of `github.com/PakhomLeo/code-project-flow` into `<skills>/code-project-flow`. `<skills>` was the first argument (`-SkillsRoot`), else `~/.qoder-cn/skills` or `~/.qoder/skills`. Updates ran `git pull --ff-only`. | A skill folder (`SKILL.md` with `name: code-project-flow`) without `.plan-gate-manifest`, whose `.git/config` has that origin. Reported as *code-project-flow git checkout*. |
+| `dsh-quick-dev` `install.sh` / `install.ps1` | `$DSH_HOME/skills/code-project-flow/` (`SKILL.md` and `references/`, no marker file); `$DSH_HOME/plugins/quick-dev-plan-arm.mjs`; one `- insert:` block with `id: preset-quick-dev` in every `profiles/*/cordis.patch.yml`. An interrupted run could leave `cordis.patch.yml.dsh-quick-dev.tmp`. | The skill folder without manifest under `$DSH_HOME/skills/` (*dsh-quick-dev copy*). The plugin by its sha256: plan-gate ships the same file. The preset block by its id. The leftover by its name. |
+| Copy by hand, or another git checkout | A skill folder without manifest | Reported as *manual copy* or *git checkout of unknown origin*. |
 
-Without `--migrate-legacy` (or a "y" at the interactive prompt), an earlier install is left untouched and the installer exits with code `3`. Nothing is ever deleted: delete the backup folder yourself when you no longer need it. The installer also prints a note when it sees an earlier install in a place this run does not manage.
+`$DSH_HOME` defaults to `~/.dsh`, as before. For each old skill folder, the installer also lists the files that the former installer did not write (your notes, for example). They are never removed: they stay in the folder, or move with it into the backup.
+
+### What it does
+
+| Item | Without `--migrate-legacy` | With `--migrate-legacy` (or "y" at the prompt) |
+| --- | --- | --- |
+| Old skill folder | Left untouched. Warning, exit code `3`. For `dsh`, the plugin and preset are then not touched either. | The whole folder, including `.git` and your files, moves to `~/.plan-gate-backups/<time>/`. A fresh copy with a manifest is installed in the same place. |
+| Plugin with the shipped content | Replaced in place (same file). | Same. |
+| Plugin you edited | Kept. Warning, exit code `3`. | Moved to the backup, then replaced. |
+| `preset-quick-dev` block | Replaced in place: one block per layer, the rest of the layer unchanged. | Same. |
+| `cordis.patch.yml.dsh-quick-dev.tmp` | Reported only. | Moved to the backup. |
+
+Nothing is ever deleted. Delete the backup folder yourself when you no longer need it. The installer also prints a note when it sees an old install in a place this run does not manage.
+
+### Commands
+
+```bash
+git clone https://github.com/PakhomLeo/plan-gate.git && cd plan-gate
+./install.sh --dry-run                          # what it found and what would change
+./install.sh --migrate-legacy                   # skill and dsh, as auto-detected
+./install.sh --components dsh --migrate-legacy  # dsh-quick-dev only
+./install.sh --components skill --skills-dir /path/to/skills --migrate-legacy  # a former first argument
+```
+
+```powershell
+git clone https://github.com/PakhomLeo/plan-gate.git; cd plan-gate
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -MigrateLegacy
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Components dsh -MigrateLegacy
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Components skill -SkillsDir C:\path\to\skills -MigrateLegacy
+```
+
+After migrating, `./install.sh --uninstall` removes the new install, and every patch layer is again byte-for-byte what it was before `dsh-quick-dev` changed it.
 
 What changed for existing users:
 
-- The skill is now **copied**, not cloned. `git pull` inside the skills folder is no longer the update path; run the installer again.
+- The skill is now **copied**, not cloned. `git pull` inside the skills folder is no longer the update path; pull this repository and run the installer again.
 - The `dsh` skill copy now uses the newest workflow text (plain-language replies in the ASD-STE100 style), which `dsh-quick-dev` already used in its mode guidance.
 - Positional `./install.sh /path/to/skills` still works and prints a deprecation note; use `--skills-dir`.
 
@@ -253,8 +304,8 @@ Known boundaries (by design):
 **Installers** (`install.sh`, `install.ps1`):
 
 - Never use `sudo` or elevation. They write only to the chosen skills folder, the DSH home, and the backup folder (only with `--migrate-legacy`).
-- Overwrite or remove only what they installed: files listed in `.cpf-manifest`, a plugin whose hash matches a shipped version, and the one preset block. Anything else is reported and skipped.
-- Recommended install: clone and run. The release one-liner verifies the archive against the release's `SHA256SUMS` before it runs anything. Piping `install.sh` straight from the network into `bash` still works (it then clones the repository; `CPF_REF` pins a tag), but nothing is verified, so it is not documented as an install method.
+- Overwrite or remove only what they installed: files listed in `.plan-gate-manifest`, a plugin whose hash matches a shipped version, and the one preset block. Anything else is reported and skipped.
+- Recommended install: clone and run. The release one-liner verifies the archive against the release's `SHA256SUMS` before it runs anything. Piping `install.sh` straight from the network into `bash` still works (it then clones the repository; `PLAN_GATE_REF` pins a tag), but nothing is verified, so it is not documented as an install method.
 
 **What the agent gets:**
 
@@ -292,14 +343,17 @@ Good fit: exploratory projects where blocks may be thrown away; long-lived repos
 ├── tests/
 │   ├── install-test.sh          # end-to-end test of install.sh in a temp HOME
 │   ├── parity-test.sh           # install.sh vs install.ps1, byte-identical results
-│   └── release-test.sh          # release assets, SHA256SUMS, download-verify-run
+│   ├── release-test.sh          # release assets, SHA256SUMS, download-verify-run
+│   ├── legacy-test.ps1          # migration from real former installs, PowerShell side
+│   ├── legacy-fixtures.sh       # runs the former installers to make real old installs
+│   └── fixtures/legacy/         # git bundles of the former repositories (test data)
 ├── scripts/                     # make-release.sh (assets + SHA256SUMS), diagram generator, PNG export
 ├── docs/assets/                 # SVG diagrams (light and dark aware)
 ├── VERSION  CHANGELOG.md  LICENSE  CONTRIBUTING.md  SECURITY.md
 └── README.md  README.zh-CN.md
 ```
 
-When this repository is cloned straight into a skills folder (the earlier manual method), `SKILL.md` and `references/` are still at its root, so it keeps working. The installer is the supported path.
+`SKILL.md` and `references/` are still at the repository root, so a clone into a skills folder under the skill's name (`git clone https://github.com/PakhomLeo/plan-gate.git code-project-flow`) still works. The installer is the supported path.
 
 ---
 
@@ -309,18 +363,19 @@ When this repository is cloned straight into a skills folder (the earlier manual
 shellcheck install.sh scripts/*.sh tests/*.sh
 bash tests/install-test.sh                 # install.sh, every case in a throwaway HOME
 bash tests/parity-test.sh                  # needs PowerShell 7 (pwsh)
+pwsh -NoProfile -File tests/legacy-test.ps1  # install.ps1 vs the former installers' install.ps1
 bash tests/release-test.sh                 # release assets, SHA256SUMS, download-verify-run
 ```
 
 Releases: push a tag `vX.Y.Z` that matches `VERSION`; [`.github/workflows/release.yml`](.github/workflows/release.yml) runs the tests, builds the assets with `scripts/make-release.sh` and publishes them.
 
-The tests never touch your real home folder. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The tests never touch your real home folder or the network. The migration cases run the former installers, unmodified, from git bundles of the former repositories in `tests/fixtures/legacy/`. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
 ## History
 
-Version 1.0.0 merges two repositories by the same author:
+Version 1.0.0 of plan-gate merges two repositories by the same author:
 
 - **code-project-flow** (2026-09-28 – 2026-10-03): the workflow skill for Qoder, with `docs/` document layout and a `git clone` installer.
 - **dsh-quick-dev** (2026-09-29 – 2026-10-21): the DSH quick dev mode, with a copy of the skill in the project-root layout, the plan-arm plugin and the preset.
