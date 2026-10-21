@@ -118,6 +118,10 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 `-ExecutionPolicy Bypass` 只对这一个进程生效，不改本机策略。
 
+实际效果：下图是在临时 `HOME`（`/tmp/demo`）里对 v1.0.0 不带参数运行 `./install.sh` 的真实输出，后面列出了装好的文件。
+
+![终端：./install.sh 自动检测到 skill 组件，把 code-project-flow 装进 ~/.qoder-cn/skills；文件列表里有 SKILL.md、LICENSE、.plan-gate-manifest 和 references/ 下的四份模板](docs/assets/install-terminal.png)
+
 ### 参数
 
 | `install.sh` | `install.ps1` | 含义 |
@@ -348,7 +352,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Components skill -Skills
 │   ├── legacy-fixtures.sh       # 运行旧安装脚本，得到真实的旧安装
 │   └── fixtures/legacy/         # 两个旧仓库的 git bundle（测试数据）
 ├── scripts/                     # make-release.sh（附件和 SHA256SUMS）、配图生成、PNG 导出
-├── docs/assets/                 # SVG 配图（适配深浅色）
+├── docs/assets/                 # SVG 配图（适配深浅色）、安装截图
 ├── VERSION  CHANGELOG.md  LICENSE  CONTRIBUTING.md  SECURITY.md
 └── README.md  README.zh-CN.md
 ```

@@ -4,6 +4,10 @@ All notable changes are listed here. Versions follow [Semantic Versioning](https
 
 ## [Unreleased]
 
+### Documentation
+
+- README (English and Chinese): a real terminal screenshot of `./install.sh` (v1.0.0, temporary `HOME`) in the Install section, `docs/assets/install-terminal.png`.
+
 ## [1.0.0] - 2026-10-21
 
 First release of **plan-gate** (https://github.com/PakhomLeo/plan-gate), the merged project. The installed skill keeps the name `code-project-flow`. Tag: `v1.0.0`.

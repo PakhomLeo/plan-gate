@@ -118,6 +118,10 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 `-ExecutionPolicy Bypass` applies to this one process only; it does not change your machine's policy.
 
+What it looks like: the real output of `./install.sh` from v1.0.0, run with no options in a temporary `HOME` (`/tmp/demo`), followed by a listing of the installed files.
+
+![Terminal: ./install.sh auto-detects the skill component and installs code-project-flow into ~/.qoder-cn/skills; the listing shows SKILL.md, LICENSE, .plan-gate-manifest and the four templates under references/](docs/assets/install-terminal.png)
+
 ### Options
 
 | `install.sh` | `install.ps1` | Meaning |
@@ -348,7 +352,7 @@ Good fit: exploratory projects where blocks may be thrown away; long-lived repos
 │   ├── legacy-fixtures.sh       # runs the former installers to make real old installs
 │   └── fixtures/legacy/         # git bundles of the former repositories (test data)
 ├── scripts/                     # make-release.sh (assets + SHA256SUMS), diagram generator, PNG export
-├── docs/assets/                 # SVG diagrams (light and dark aware)
+├── docs/assets/                 # SVG diagrams (light and dark aware), install screenshot
 ├── VERSION  CHANGELOG.md  LICENSE  CONTRIBUTING.md  SECURITY.md
 └── README.md  README.zh-CN.md
 ```
