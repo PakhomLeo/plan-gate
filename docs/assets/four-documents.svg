@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="350" viewBox="0 0 960 350" role="img" aria-labelledby="title desc">
+<title id="title">code-project-flow: the four documents</title>
+<desc id="desc">AGENTS.md holds the rules, MAP.md the design, HARNESS.md the registered regression loops, TASK.md the current round. Paths differ between the skill layout (docs/) and the DSH layout (project root).</desc>
+<style>
+  .bg{fill:none}
+  .t{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#1f2328}
+  .h{font-size:20px;font-weight:700}
+  .b{font-size:15px;font-weight:650}
+  .s{font-size:12.5px;fill:#59636e}
+  .m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;fill:#59636e}
+  .box{fill:#f6f8fa;stroke:#d0d7de;stroke-width:1.5}
+  .acc{fill:#ddf4ff;stroke:#0969da;stroke-width:1.8}
+  .gate{fill:#ffebe9;stroke:#cf222e;stroke-width:1.8}
+  .ok{fill:#dafbe1;stroke:#1a7f37;stroke-width:1.5}
+  .ln{stroke:#59636e;stroke-width:1.6;fill:none}
+  .lg{stroke:#cf222e;stroke-width:1.6;fill:none;stroke-dasharray:5 4}
+  .ah{fill:#59636e}.ahg{fill:#cf222e}
+  @media (prefers-color-scheme: dark){
+    .t{fill:#e6edf3}.s,.m{fill:#9198a1}
+    .box{fill:#161b22;stroke:#3d444d}
+    .acc{fill:#0c2d6b;stroke:#4493f8}
+    .gate{fill:#3c1618;stroke:#f85149}
+    .ok{fill:#0f2d1a;stroke:#3fb950}
+    .ln{stroke:#9198a1}.ah{fill:#9198a1}
+    .lg{stroke:#f85149}.ahg{fill:#f85149}
+  }
+</style>
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahg" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<text class="t h" x="480" y="34" text-anchor="middle">Four documents: decisions on disk, not in chat</text>
+<rect class="gate" x="20" y="60" width="215" height="210" rx="10"/>
+<text class="t b" x="127" y="88" text-anchor="middle">Doc 1  AGENTS.md</text>
+<text class="t s" x="127" y="108" text-anchor="middle">rules</text>
+<text class="t s" x="127" y="136" text-anchor="middle">written by you only</text>
+<text class="t s" x="127" y="155" text-anchor="middle">4 overriding principles</text>
+<text class="t s" x="127" y="174" text-anchor="middle">who owns what</text>
+<text class="t s" x="34" y="222" text-anchor="start">skill:</text>
+<text class="t m" x="80" y="222" text-anchor="start">AGENTS.md</text>
+<text class="t s" x="34" y="244" text-anchor="start">DSH:</text>
+<text class="t m" x="80" y="244" text-anchor="start">AGENTS.md</text>
+<rect class="box" x="255" y="60" width="215" height="210" rx="10"/>
+<text class="t b" x="362" y="88" text-anchor="middle">Doc 2  MAP.md</text>
+<text class="t s" x="362" y="108" text-anchor="middle">design</text>
+<text class="t s" x="362" y="136" text-anchor="middle">agent proposes, you approve</text>
+<text class="t s" x="362" y="155" text-anchor="middle">features, structure,</text>
+<text class="t s" x="362" y="174" text-anchor="middle">user flow, data flow</text>
+<text class="t s" x="269" y="222" text-anchor="start">skill:</text>
+<text class="t m" x="315" y="222" text-anchor="start">docs/MAP.md</text>
+<text class="t s" x="269" y="244" text-anchor="start">DSH:</text>
+<text class="t m" x="315" y="244" text-anchor="start">MAP.md</text>
+<rect class="box" x="490" y="60" width="215" height="210" rx="10"/>
+<text class="t b" x="597" y="88" text-anchor="middle">Doc 3  HARNESS.md</text>
+<text class="t s" x="597" y="108" text-anchor="middle">regression loops</text>
+<text class="t s" x="597" y="136" text-anchor="middle">agent proposes, you approve</text>
+<text class="t s" x="597" y="155" text-anchor="middle">registered loops only,</text>
+<text class="t s" x="597" y="174" text-anchor="middle">code lives in harness/</text>
+<text class="t s" x="504" y="222" text-anchor="start">skill:</text>
+<text class="t m" x="550" y="222" text-anchor="start">docs/HARNESS.md</text>
+<text class="t s" x="504" y="244" text-anchor="start">DSH:</text>
+<text class="t m" x="550" y="244" text-anchor="start">HARNESS.md</text>
+<rect class="acc" x="725" y="60" width="215" height="210" rx="10"/>
+<text class="t b" x="832" y="88" text-anchor="middle">Doc 4  TASK.md</text>
+<text class="t s" x="832" y="108" text-anchor="middle">this round only</text>
+<text class="t s" x="832" y="136" text-anchor="middle">agent writes, you confirm</text>
+<text class="t s" x="832" y="155" text-anchor="middle">7 sections, down to</text>
+<text class="t s" x="832" y="174" text-anchor="middle">functions and paths</text>
+<text class="t s" x="739" y="222" text-anchor="start">skill:</text>
+<text class="t m" x="785" y="222" text-anchor="start">docs/TASK.md</text>
+<text class="t s" x="739" y="244" text-anchor="start">DSH:</text>
+<text class="t m" x="785" y="244" text-anchor="start">TASK.md</text>
+<path class="ln" d="M20,300 L 700,300" marker-end="url(#a)"/>
+<text class="t s" x="360" y="322" text-anchor="middle">a new session reads Docs 1, 2, 3 (DSH auto-loads them from the project root)</text>
+<text class="t s" x="842" y="300" text-anchor="middle">deleted at close-out</text>
+<text class="t s" x="842" y="322" text-anchor="middle">its existence = round in progress</text>
+</svg>

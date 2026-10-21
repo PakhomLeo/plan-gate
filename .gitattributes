@@ -1,0 +1,6 @@
+# Check every text file out with LF on every platform, whatever core.autocrlf says.
+# install.sh fails under bash with CRLF; SKILL.md front matter and the templates
+# are parsed by agents, and a CRLF checkout leaves \r inside YAML values; the
+# preset block is compared line by line inside DSH patch layers.
+* text=auto eol=lf
+*.png binary

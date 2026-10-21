@@ -1,0 +1,162 @@
+- insert:
+    # 快速开发模式（quick-dev）：以官方 standard 的插件列表为底，只改三处——
+    # 声明头、agent-instructions 的自动加载候选与预算、plan-mode 的提示词；
+    # 并加一行自动武装计划模式的本地插件。其余插件行与 standard 逐字相同。
+    - id: preset-quick-dev
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: quick-dev
+        name: 快速开发模式
+        description: 开工前先把计划（设计文档或当次说明）提交上来等批准；批准后才动文件。
+        order: 1.5
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              suffix: |
+                回答我时按 ASD-STE100（简化技术英语）的写法，用普通人能看懂的话：
+                一句只讲一件事，句子短；先说结果，再说原因；用主动语态；同一个东西始终用同一个词；不用比喻、行话和空话。
+                不要用函数名、字段名、类型名、参数名、命令来代替解释。要说明"改哪里"时才写这些名字；写了名字，前面先用普通话说清它是什么、会有什么变化。
+                当次说明（TASK.md）也用这个写法写，函数名和路径要写准，周围的话用普通话说。
+              prefix: You are a coding agent powered by the {{model}} model.
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 204800
+              instructionFileCandidates:
+                - AGENTS.md
+                - CLAUDE.md
+                - MAP.md
+                - HARNESS.md
+                - TASK.md
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+          - id: tool-schedule
+            name: '@deepseek-ai/dsh-tool-schedule'
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: command-goal
+            name: '@deepseek-ai/dsh-command-goal'
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
+          - id: planning
+            name: cordis:group
+            group: true
+            isolate:
+              planMode: true
+            config:
+              - id: plan-mode
+                name: '@deepseek-ai/dsh-plan-mode'
+                config:
+                  section: |
+                    你在快速开发模式下。这个模式管的是"什么时候可以动手"，不是"怎么写代码"。
+
+                    开工前必须先提交一份计划、等我批准；批准之后才动文件。这里提交的"计划"就是那套流程里的一份文档：
+                    - 项目第一次：设计文档（八节）。它管这个项目要做什么选择。
+                    - 每次任务：当次说明（七节）。它管这一次怎么落。
+                    两份都写在项目根。写这份计划文件本身是这个阶段唯一允许的改动，其余文件在批准之前一律不得动。
+
+                    该交哪一份：有项目规则、没有设计文档 —— 在共创设计文档；有设计文档、没有当次说明 —— 在等这一次的当次说明；当次说明已经存在 —— 这一次已经在确认或施工中，不要重复提交。
+                    如果设计文档刚补完、还没开始实施：不要提交计划，直接提醒我另开一个对话再开始实施。
+
+                    我在评审里只有两个选择：批准，或继续完善。选继续完善时我的意见会回到你那里，改完再提交一次。批准之后按这份计划施工，且不得改它第二节没列出的文件。
+
+                    这份纪律是建议不是围栏——不会拦你调用任何工具。但它是这个模式的默认行为，按硬要求执行。
+              - id: quick-dev-plan-arm
+                name: '__QUICK_DEV_PLUGIN_URL__'
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: delegation
+            name: cordis:group
+            group: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+              - id: tool-subagent-list-agents
+                name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  modelSelectionSettings: true
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+              - id: tool-subagent-codex
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: codex
+                  toolName: subagent_codex
+                  maxDepth: provider-managed
+              - id: tool-subagent-claude-code
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: claude-code
+                  toolName: subagent_claude_code
+                  maxDepth: provider-managed
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+              - id: tool-ralph
+                name: '@deepseek-ai/dsh-tool-ralph'
+                disabled: true
+                config:
+                  subagentProvider: spawn
+                  maxRounds: 64
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
+          - id: tool-plugin-manager
+            name: '@deepseek-ai/dsh-plugin-manager/tools'
+            disabled: true

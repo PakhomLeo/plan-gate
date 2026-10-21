@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="460" viewBox="0 0 960 460" role="img" aria-labelledby="title desc">
+<title id="title">code-project-flow: components and install targets</title>
+<desc id="desc">The installer copies the skill into a skills folder and, for DSH, also installs the plan-arm plugin and a preset block in every profile patch layer.</desc>
+<style>
+  .bg{fill:none}
+  .t{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#1f2328}
+  .h{font-size:20px;font-weight:700}
+  .b{font-size:15px;font-weight:650}
+  .s{font-size:12.5px;fill:#59636e}
+  .m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;fill:#59636e}
+  .box{fill:#f6f8fa;stroke:#d0d7de;stroke-width:1.5}
+  .acc{fill:#ddf4ff;stroke:#0969da;stroke-width:1.8}
+  .gate{fill:#ffebe9;stroke:#cf222e;stroke-width:1.8}
+  .ok{fill:#dafbe1;stroke:#1a7f37;stroke-width:1.5}
+  .ln{stroke:#59636e;stroke-width:1.6;fill:none}
+  .lg{stroke:#cf222e;stroke-width:1.6;fill:none;stroke-dasharray:5 4}
+  .ah{fill:#59636e}.ahg{fill:#cf222e}
+  @media (prefers-color-scheme: dark){
+    .t{fill:#e6edf3}.s,.m{fill:#9198a1}
+    .box{fill:#161b22;stroke:#3d444d}
+    .acc{fill:#0c2d6b;stroke:#4493f8}
+    .gate{fill:#3c1618;stroke:#f85149}
+    .ok{fill:#0f2d1a;stroke:#3fb950}
+    .ln{stroke:#9198a1}.ah{fill:#9198a1}
+    .lg{stroke:#f85149}.ahg{fill:#f85149}
+  }
+</style>
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahg" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<text class="t h" x="480" y="34" text-anchor="middle">One repository, two components, one installer</text>
+<rect class="box" x="20" y="70" width="260" height="250" rx="10"/>
+<text class="t b" x="150" y="98" text-anchor="middle">Repository</text>
+<text class="t m" x="38" y="130" text-anchor="start">SKILL.md</text>
+<text class="t m" x="38" y="158" text-anchor="start">references/  (4 templates)</text>
+<text class="t m" x="38" y="186" text-anchor="start">dsh/preset/quick-dev.patch.yml</text>
+<text class="t m" x="38" y="214" text-anchor="start">dsh/plugin/quick-dev-plan-arm.mjs</text>
+<text class="t m" x="38" y="242" text-anchor="start">install.sh  install.ps1</text>
+<text class="t m" x="38" y="270" text-anchor="start">VERSION  LICENSE</text>
+<rect class="acc" x="318" y="140" width="200" height="110" rx="10"/>
+<text class="t b" x="418.0" y="166" text-anchor="middle">Installer</text>
+<text class="t m" x="418.0" y="188" text-anchor="middle">install.sh  /  install.ps1</text>
+<text class="t m" x="418.0" y="206" text-anchor="middle">--components skill,dsh</text>
+<text class="t m" x="418.0" y="224" text-anchor="middle">--dry-run  --uninstall</text>
+<text class="t m" x="418.0" y="242" text-anchor="middle">--migrate-legacy</text>
+<path class="ln" d="M280,195 L314,195" marker-end="url(#a)"/>
+<rect class="box" x="550" y="60" width="390" height="130" rx="10"/>
+<text class="t b" x="745" y="86" text-anchor="middle">skill  →  any SKILL.md client (default: Qoder)</text>
+<text class="t m" x="568" y="110" text-anchor="start">~/.qoder-cn/skills/code-project-flow/</text>
+<text class="t m" x="582.4" y="130" text-anchor="start">or ~/.qoder/skills/…, or --skills-dir DIR</text>
+<text class="t m" x="568" y="150" text-anchor="start">SKILL.md  references/  LICENSE  .cpf-manifest</text>
+<text class="t m" x="568" y="170" text-anchor="start">documents in the project: docs/MAP.md …</text>
+<rect class="box" x="550" y="210" width="390" height="150" rx="10"/>
+<text class="t b" x="745" y="236" text-anchor="middle">dsh  →  DSH quick dev mode</text>
+<text class="t m" x="568" y="260" text-anchor="start">$DSH_HOME (default ~/.dsh)/</text>
+<text class="t m" x="582.4" y="278" text-anchor="start">skills/code-project-flow/   root layout</text>
+<text class="t m" x="582.4" y="296" text-anchor="start">plugins/quick-dev-plan-arm.mjs</text>
+<text class="t m" x="582.4" y="314" text-anchor="start">profiles/*/cordis.patch.yml</text>
+<text class="t m" x="611.2" y="332" text-anchor="start">+ one preset-quick-dev block</text>
+<text class="t m" x="568" y="350" text-anchor="start">documents in the project root: MAP.md …</text>
+<path class="ln" d="M518,180 C535,180 530,125 546,125" marker-end="url(#a)"/>
+<path class="ln" d="M518,215 C535,215 530,285 546,285" marker-end="url(#a)"/>
+<rect class="gate" x="20" y="385" width="920" height="60" rx="10"/>
+<text class="t s" x="480" y="410" text-anchor="middle">Upgrades: an install without .cpf-manifest (from the former installers) is never overwritten.</text>
+<text class="t s" x="480" y="430" text-anchor="middle">It is skipped (exit 3) or, with --migrate-legacy, moved to ~/.code-project-flow-backups/&lt;time&gt;/. Nothing is deleted.</text>
+</svg>

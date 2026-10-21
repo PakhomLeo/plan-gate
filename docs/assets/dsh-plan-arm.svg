@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="380" viewBox="0 0 960 380" role="img" aria-labelledby="title desc">
+<title id="title">code-project-flow: DSH plan-arm plugin</title>
+<desc id="desc">On session creation the plugin arms plan mode for root agents when AGENTS.md exists and TASK.md does not. Subagents are skipped. It re-arms after a round's TASK.md disappears.</desc>
+<style>
+  .bg{fill:none}
+  .t{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#1f2328}
+  .h{font-size:20px;font-weight:700}
+  .b{font-size:15px;font-weight:650}
+  .s{font-size:12.5px;fill:#59636e}
+  .m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;fill:#59636e}
+  .box{fill:#f6f8fa;stroke:#d0d7de;stroke-width:1.5}
+  .acc{fill:#ddf4ff;stroke:#0969da;stroke-width:1.8}
+  .gate{fill:#ffebe9;stroke:#cf222e;stroke-width:1.8}
+  .ok{fill:#dafbe1;stroke:#1a7f37;stroke-width:1.5}
+  .ln{stroke:#59636e;stroke-width:1.6;fill:none}
+  .lg{stroke:#cf222e;stroke-width:1.6;fill:none;stroke-dasharray:5 4}
+  .ah{fill:#59636e}.ahg{fill:#cf222e}
+  @media (prefers-color-scheme: dark){
+    .t{fill:#e6edf3}.s,.m{fill:#9198a1}
+    .box{fill:#161b22;stroke:#3d444d}
+    .acc{fill:#0c2d6b;stroke:#4493f8}
+    .gate{fill:#3c1618;stroke:#f85149}
+    .ok{fill:#0f2d1a;stroke:#3fb950}
+    .ln{stroke:#9198a1}.ah{fill:#9198a1}
+    .lg{stroke:#f85149}.ahg{fill:#f85149}
+  }
+</style>
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahg" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<text class="t h" x="480" y="34" text-anchor="middle">DSH quick dev mode: when the plugin opens plan mode</text>
+<rect class="box" x="20" y="80" width="190" height="76" rx="10"/>
+<text class="t b" x="115.0" y="106" text-anchor="middle">Session event</text>
+<text class="t s" x="115.0" y="128" text-anchor="middle">agent/created, and</text>
+<text class="t s" x="115.0" y="146" text-anchor="middle">agent/pre-step (re-arm)</text>
+<rect class="box" x="260" y="80" width="190" height="76" rx="10"/>
+<text class="t b" x="355.0" y="106" text-anchor="middle">Subagent?</text>
+<text class="t s" x="355.0" y="128" text-anchor="middle">header.origin ==</text>
+<text class="t s" x="355.0" y="146" text-anchor="middle">“subagent”</text>
+<rect class="acc" x="500" y="80" width="210" height="76" rx="10"/>
+<text class="t b" x="605.0" y="106" text-anchor="middle">Plan due?</text>
+<text class="t s" x="605.0" y="128" text-anchor="middle">AGENTS.md in cwd</text>
+<text class="t s" x="605.0" y="146" text-anchor="middle">and no TASK.md</text>
+<rect class="gate" x="760" y="80" width="180" height="76" rx="10"/>
+<text class="t b" x="850.0" y="106" text-anchor="middle">Arm plan mode</text>
+<text class="t s" x="850.0" y="128" text-anchor="middle">planMode.set(agent, true)</text>
+<text class="t s" x="850.0" y="146" text-anchor="middle">never auto-approves</text>
+<path class="ln" d="M210,118 L256,118" marker-end="url(#a)"/>
+<path class="ln" d="M450,118 L496,118" marker-end="url(#a)"/>
+<path class="lg" d="M710,118 L756,118" marker-end="url(#g)"/>
+<text class="t s" x="475" y="108" text-anchor="middle">no</text>
+<text class="t s" x="733" y="108" text-anchor="middle">yes</text>
+<rect class="ok" x="260" y="200" width="190" height="50" rx="10"/>
+<text class="t b" x="355" y="230" text-anchor="middle">skip, never arm</text>
+<path class="ln" d="M355,156 L355,196" marker-end="url(#a)"/>
+<text class="t s" x="370" y="182" text-anchor="start">yes</text>
+<rect class="ok" x="500" y="200" width="210" height="50" rx="10"/>
+<text class="t b" x="605" y="230" text-anchor="middle">do nothing</text>
+<path class="ln" d="M605,156 L605,196" marker-end="url(#a)"/>
+<text class="t s" x="620" y="182" text-anchor="start">no</text>
+<rect class="box" x="20" y="280" width="920" height="84" rx="10"/>
+<text class="t s" x="480" y="306" text-anchor="middle">Re-arm only after a round ends: the plugin saw TASK.md, it is now gone, AGENTS.md is still there, and plan mode is off.</text>
+<text class="t s" x="480" y="328" text-anchor="middle">It reads two file paths and flips plan mode on. It adds no tools, blocks no tool call, and errors only log a warning,</text>
+<text class="t s" x="480" y="348" text-anchor="middle">so a failure can never stop a session from opening. You still approve or refine every plan yourself.</text>
+</svg>

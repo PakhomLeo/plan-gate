@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="395" viewBox="0 0 960 395" role="img" aria-labelledby="title desc">
+<title id="title">code-project-flow: five phases</title>
+<desc id="desc">Read, write the task brief, confirm, build, close out. The confirm step is the only gate; close-out proposes write-backs to HARNESS.md and MAP.md and deletes TASK.md.</desc>
+<style>
+  .bg{fill:none}
+  .t{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#1f2328}
+  .h{font-size:20px;font-weight:700}
+  .b{font-size:15px;font-weight:650}
+  .s{font-size:12.5px;fill:#59636e}
+  .m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;fill:#59636e}
+  .box{fill:#f6f8fa;stroke:#d0d7de;stroke-width:1.5}
+  .acc{fill:#ddf4ff;stroke:#0969da;stroke-width:1.8}
+  .gate{fill:#ffebe9;stroke:#cf222e;stroke-width:1.8}
+  .ok{fill:#dafbe1;stroke:#1a7f37;stroke-width:1.5}
+  .ln{stroke:#59636e;stroke-width:1.6;fill:none}
+  .lg{stroke:#cf222e;stroke-width:1.6;fill:none;stroke-dasharray:5 4}
+  .ah{fill:#59636e}.ahg{fill:#cf222e}
+  @media (prefers-color-scheme: dark){
+    .t{fill:#e6edf3}.s,.m{fill:#9198a1}
+    .box{fill:#161b22;stroke:#3d444d}
+    .acc{fill:#0c2d6b;stroke:#4493f8}
+    .gate{fill:#3c1618;stroke:#f85149}
+    .ok{fill:#0f2d1a;stroke:#3fb950}
+    .ln{stroke:#9198a1}.ah{fill:#9198a1}
+    .lg{stroke:#f85149}.ahg{fill:#f85149}
+  }
+</style>
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahg" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<text class="t h" x="480" y="34" text-anchor="middle">Five phases, one approval gate</text>
+<rect class="box" x="20" y="110" width="160" height="126" rx="10"/>
+<text class="t b" x="100.0" y="136" text-anchor="middle">1  Read</text>
+<text class="t s" x="100.0" y="158" text-anchor="middle">AGENTS.md, MAP.md,</text>
+<text class="t s" x="100.0" y="176" text-anchor="middle">HARNESS.md, then code</text>
+<text class="t s" x="100.0" y="194" text-anchor="middle">MAP.md missing: draft it</text>
+<text class="t s" x="100.0" y="212" text-anchor="middle">from the real code</text>
+<rect class="acc" x="210" y="110" width="160" height="126" rx="10"/>
+<text class="t b" x="290.0" y="136" text-anchor="middle">2  Write brief</text>
+<text class="t s" x="290.0" y="158" text-anchor="middle">TASK.md, 7 sections</text>
+<text class="t s" x="290.0" y="176" text-anchor="middle">plain language</text>
+<text class="t s" x="290.0" y="194" text-anchor="middle">(ASD-STE100)</text>
+<text class="t s" x="290.0" y="212" text-anchor="middle">then STOP</text>
+<rect class="gate" x="400" y="110" width="160" height="126" rx="10"/>
+<text class="t b" x="480.0" y="136" text-anchor="middle">3  Confirm</text>
+<text class="t s" x="480.0" y="158" text-anchor="middle">nothing moves until</text>
+<text class="t s" x="480.0" y="176" text-anchor="middle">you say go</text>
+<text class="t s" x="480.0" y="194" text-anchor="middle">approve</text>
+<text class="t s" x="480.0" y="212" text-anchor="middle">or keep refining</text>
+<rect class="box" x="590" y="110" width="160" height="126" rx="10"/>
+<text class="t b" x="670.0" y="136" text-anchor="middle">4  Build</text>
+<text class="t s" x="670.0" y="158" text-anchor="middle">only files listed</text>
+<text class="t s" x="670.0" y="176" text-anchor="middle">in TASK.md section 2</text>
+<text class="t s" x="670.0" y="194" text-anchor="middle">no tests, no harness</text>
+<text class="t s" x="670.0" y="212" text-anchor="middle">while building</text>
+<rect class="acc" x="780" y="110" width="160" height="126" rx="10"/>
+<text class="t b" x="860.0" y="136" text-anchor="middle">5  Close out</text>
+<text class="t s" x="860.0" y="158" text-anchor="middle">one run: section 7</text>
+<text class="t s" x="860.0" y="176" text-anchor="middle">+ every registered</text>
+<text class="t s" x="860.0" y="194" text-anchor="middle">harness, real data</text>
+<text class="t s" x="860.0" y="212" text-anchor="middle">no fake mocks</text>
+<path class="ln" d="M180,173.0 L206,173.0" marker-end="url(#a)"/>
+<path class="ln" d="M370,173.0 L396,173.0" marker-end="url(#a)"/>
+<path class="lg" d="M560,173.0 L586,173.0" marker-end="url(#g)"/>
+<path class="ln" d="M750,173.0 L776,173.0" marker-end="url(#a)"/>
+<path class="lg" d="M480.0,110 C480.0,66 290.0,66 290.0,106" marker-end="url(#g)"/>
+<text class="t s" x="385.0" y="70" text-anchor="middle">keep refining: feedback goes back to the brief</text>
+<rect class="ok" x="470" y="305" width="150" height="64" rx="10"/>
+<text class="t b" x="545" y="330" text-anchor="middle">HARNESS.md</text>
+<text class="t s" x="545" y="351" text-anchor="middle">add loops worth keeping</text>
+<path class="ln" d="M860.0,236 C860.0,275 545,265 545,301" marker-end="url(#a)"/>
+<rect class="ok" x="640" y="305" width="150" height="64" rx="10"/>
+<text class="t b" x="715" y="330" text-anchor="middle">MAP.md</text>
+<text class="t s" x="715" y="351" text-anchor="middle">decisions that will recur</text>
+<path class="ln" d="M860.0,236 C860.0,275 715,265 715,301" marker-end="url(#a)"/>
+<rect class="box" x="810" y="305" width="150" height="64" rx="10"/>
+<text class="t b" x="885" y="330" text-anchor="middle">TASK.md</text>
+<text class="t s" x="885" y="351" text-anchor="middle">deleted, never archived</text>
+<path class="ln" d="M860.0,236 C860.0,275 885,265 885,301" marker-end="url(#a)"/>
+<text class="t s" x="460" y="330" text-anchor="end">Write-backs are proposed with the before</text>
+<text class="t s" x="460" y="348" text-anchor="end">and after sentence. Written only if you agree;</text>
+<text class="t s" x="460" y="366" text-anchor="end">a “no” is final and never asked twice.</text>
+</svg>

@@ -1,0 +1,19 @@
+# Agent session state
+.qoder/
+.qoder-cn/
+
+# Workflow documents and harnesses written while dogfooding the workflow on
+# this repository. They belong to a consuming project, not to this one.
+/MAP.md
+/HARNESS.md
+/TASK.md
+/docs/MAP.md
+/docs/HARNESS.md
+/docs/TASK.md
+/harness/
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~

@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        if: runner.os == 'Linux'
+        run: shellcheck install.sh tests/*.sh
+      - name: install.sh end-to-end
+        run: bash tests/install-test.sh
+      - name: install.sh vs install.ps1 parity
+        if: runner.os == 'Linux'
+        run: bash tests/parity-test.sh
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install.ps1 under Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # Explicit folders keep the run away from the runner's real profile.
+          $HOME_DIR = Join-Path $env:RUNNER_TEMP 'home'
+          New-Item -ItemType Directory -Force "$HOME_DIR\.dsh\profiles\desktop" | Out-Null
+          Set-Content -NoNewline -Path "$HOME_DIR\.dsh\profiles\desktop\cordis.patch.yml" -Value "[]`r`n"
+          $before = Get-FileHash "$HOME_DIR\.dsh\profiles\desktop\cordis.patch.yml"
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Components all -SkillsDir "$HOME_DIR\skills" -DshHome "$HOME_DIR\.dsh"
+          if ($LASTEXITCODE -ne 0) { throw "install exit $LASTEXITCODE" }
+          if (-not (Select-String -Path "$HOME_DIR\.dsh\profiles\desktop\cordis.patch.yml" -SimpleMatch 'preset-quick-dev' -Quiet)) { throw 'preset block missing' }
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Components all -SkillsDir "$HOME_DIR\skills" -DshHome "$HOME_DIR\.dsh" -Uninstall
+          if ($LASTEXITCODE -ne 0) { throw "uninstall exit $LASTEXITCODE" }
+          if ((Get-FileHash "$HOME_DIR\.dsh\profiles\desktop\cordis.patch.yml").Hash -ne $before.Hash) { throw 'patch layer not restored' }
